@@ -1,0 +1,288 @@
+.reservations {
+  flex: 1;
+  padding: 32px;
+  overflow-y: auto;
+}
+
+.flex-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.list-container {
+  min-height: 400px;
+}
+
+.list-toolbar {
+  margin-bottom: 24px;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  background-color: var(--color-bg-main);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  padding: 0 12px;
+  max-width: 320px;
+}
+
+.search-icon {
+  color: var(--color-text-muted);
+}
+
+.search-box input {
+  border: none;
+  background: transparent;
+  width: 100%;
+}
+
+.search-box input:focus {
+  border-color: transparent;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.res-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.res-table th {
+  color: var(--color-text-muted);
+  font-weight: 500;
+  font-size: 13px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.res-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 14px;
+}
+
+.fw-600 {
+  font-weight: 600;
+}
+
+.time-badge {
+  background-color: rgba(248, 225, 54, 0.1);
+  color: var(--color-primary);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.pax-badge {
+  color: var(--color-text-muted);
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.status-badge.confirmed {
+  background-color: rgba(30, 215, 96, 0.1);
+  color: #1ed760;
+}
+
+.status-badge.pending {
+  background-color: rgba(255, 165, 0, 0.1);
+  color: #ffa500;
+}
+
+.status-badge.received {
+  background-color: rgba(0, 123, 255, 0.1);
+  color: #007bff;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 12px;
+}
+
+.action-btn {
+  padding: 6px;
+  border-radius: 4px;
+  color: var(--color-text-muted);
+}
+
+.action-btn.edit:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.action-btn.confirm:hover {
+  background-color: rgba(30, 215, 96, 0.1);
+  color: #1ed760;
+}
+
+.action-btn.received:hover {
+  background-color: rgba(0, 123, 255, 0.1);
+  color: #007bff;
+}
+
+.action-btn.delete:hover {
+  background-color: rgba(255, 75, 75, 0.1);
+  color: var(--color-danger);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px !important;
+  color: var(--color-text-muted);
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-card {
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  width: 100%;
+  max-width: 500px;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.modal-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.close-btn {
+  color: var(--color-text-muted);
+}
+
+.close-btn:hover {
+  color: white;
+  transform: rotate(90deg);
+}
+
+.res-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-text-main);
+  border: 1px solid var(--color-border);
+  padding: 10px 20px;
+  border-radius: var(--border-radius-sm);
+  font-weight: 500;
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-bg-main);
+}
+
+/* New Badges for Occasions */
+.occasion-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.occasion-badge.birthday {
+  background-color: rgba(248, 225, 54, 0.1);
+  color: var(--color-primary);
+  border: 1px solid rgba(248, 225, 54, 0.3);
+}
+
+.occasion-badge.anniversary {
+  background-color: rgba(255, 75, 75, 0.1);
+  color: #ff4b4b;
+  border: 1px solid rgba(255, 75, 75, 0.3);
+}
+
+.occasion-badge.romance {
+  background-color: rgba(255, 20, 147, 0.1);
+  color: #ff1493;
+  border: 1px solid rgba(255, 20, 147, 0.3);
+}
+
+.requests-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #a0a0a0;
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.requests-note:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+/* Mini Modal for Notes */
+.mini-modal {
+  max-width: 350px;
+  min-height: 200px;
+}
+
+.note-content {
+  padding: 16px 0;
+  line-height: 1.6;
+  color: var(--color-text-main);
+  white-space: pre-wrap;
+}

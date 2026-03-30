@@ -1,0 +1,158 @@
+// ROSÉ Cafe Bar - Reservation Management System
+// Prisma Schema - SQLite with multi-tenant ready structure
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Restaurant (tenant) ────────────────────────────────
+model Restaurant {
+  id              String   @id @default(uuid())
+  name            String
+  slug            String   @unique
+  logoUrl         String?  @map("logo_url")
+  primaryColor    String   @default("#C9A96E") @map("primary_color")
+  secondaryColor  String   @default("#1a1a1a") @map("secondary_color")
+  timezone        String   @default("America/Bogota")
+  phone           String?
+  address         String?
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  settings        RestaurantSettings?
+  businessHours   BusinessHours[]
+  reservations    Reservation[]
+  customers       Customer[]
+  notificationLogs NotificationLog[]
+  auditLogs       AuditLog[]
+
+  @@map("restaurants")
+}
+
+// ─── Restaurant Settings (1:1) ──────────────────────────
+model RestaurantSettings {
+  id                        String   @id @default(uuid())
+  restaurantId              String   @unique @map("restaurant_id")
+  reservationDurationMinutes Int     @default(120) @map("reservation_duration_minutes")
+  maxCapacityPerSlot        Int      @default(20) @map("max_capacity_per_slot")
+  maxPartySize              Int      @default(8) @map("max_party_size")
+  minAdvanceHours           Int      @default(2) @map("min_advance_hours")
+  confirmationLeadHours     Int      @default(8) @map("confirmation_lead_hours")
+  allowSpecialRequests      Boolean  @default(true) @map("allow_special_requests")
+  defaultOpenTime           String   @default("18:00") @map("default_open_time")
+  defaultCloseTime          String   @default("23:59") @map("default_close_time")
+  createdAt                 DateTime @default(now()) @map("created_at")
+  updatedAt                 DateTime @updatedAt @map("updated_at")
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
+
+  @@map("restaurant_settings")
+}
+
+// ─── Business Hours ─────────────────────────────────────
+model BusinessHours {
+  id            String  @id @default(uuid())
+  restaurantId  String  @map("restaurant_id")
+  weekday       Int     // 0=Sunday, 1=Monday, ... 6=Saturday
+  isOpen        Boolean @default(true) @map("is_open")
+  openTime      String  @default("18:00") @map("open_time")
+  closeTime     String  @default("23:59") @map("close_time")
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
+
+  @@unique([restaurantId, weekday])
+  @@map("business_hours")
+}
+
+// ─── Customer ───────────────────────────────────────────
+model Customer {
+  id                  String    @id @default(uuid())
+  restaurantId        String    @map("restaurant_id")
+  fullName            String    @map("full_name")
+  phone               String
+  totalReservations   Int       @default(0) @map("total_reservations")
+  lastReservationAt   DateTime? @map("last_reservation_at")
+  lastStatus          String?   @map("last_status")
+  tags                String?   // comma-separated tags
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  reservations Reservation[]
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  @@unique([restaurantId, phone])
+  @@map("customers")
+}
+
+// ─── Reservation ────────────────────────────────────────
+model Reservation {
+  id                String    @id @default(uuid())
+  restaurantId      String    @map("restaurant_id")
+  customerId        String?   @map("customer_id")
+  fullName          String    @map("full_name")
+  phone             String
+  reservationDate   String    @map("reservation_date")   // YYYY-MM-DD
+  reservationTime   String    @map("reservation_time")   // HH:MM
+  partySize         Int       @map("party_size")
+  occasion          String?
+  specialRequests   String?   @map("special_requests")
+  status            String    @default("pending") // pending, confirmed, cancelled, no_show, completed
+  source            String    @default("web")     // web, whatsapp, admin
+  confirmationSentAt DateTime? @map("confirmation_sent_at")
+  confirmedAt       DateTime? @map("confirmed_at")
+  cancelledAt       DateTime? @map("cancelled_at")
+  completedAt       DateTime? @map("completed_at")
+  noShowAt          DateTime? @map("no_show_at")
+  createdByRole     String    @default("customer") @map("created_by_role") // customer, admin
+  notesInternal     String?   @map("notes_internal")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  restaurant       Restaurant        @relation(fields: [restaurantId], references: [id])
+  customer         Customer?         @relation(fields: [customerId], references: [id])
+  notificationLogs NotificationLog[]
+
+  @@map("reservations")
+}
+
+// ─── Notification Log ───────────────────────────────────
+model NotificationLog {
+  id              String    @id @default(uuid())
+  restaurantId    String    @map("restaurant_id")
+  reservationId   String    @map("reservation_id")
+  type            String    // reminder, confirmation_request, manual_message
+  channel         String    @default("whatsapp") // whatsapp, internal
+  status          String    @default("pending")  // pending, sent, failed
+  scheduledFor    DateTime  @map("scheduled_for")
+  sentAt          DateTime? @map("sent_at")
+  payloadJson     String?   @map("payload_json")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  restaurant  Restaurant  @relation(fields: [restaurantId], references: [id])
+  reservation Reservation @relation(fields: [reservationId], references: [id])
+
+  @@map("notification_logs")
+}
+
+// ─── Audit Log ──────────────────────────────────────────
+model AuditLog {
+  id            String   @id @default(uuid())
+  restaurantId  String   @map("restaurant_id")
+  entityType    String   @map("entity_type")
+  entityId      String   @map("entity_id")
+  action        String   // create, update, delete, status_change
+  actorRole     String   @map("actor_role") // customer, admin, system
+  actorName     String?  @map("actor_name")
+  metadataJson  String?  @map("metadata_json")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
+
+  @@map("audit_logs")
+}

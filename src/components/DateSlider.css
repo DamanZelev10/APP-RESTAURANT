@@ -1,0 +1,98 @@
+.date-slider-wrapper {
+  margin: 10px 0 24px;
+  width: 100%;
+}
+
+.date-slider-scroll {
+  display: flex;
+  overflow-x: auto;
+  gap: 12px;
+  padding: 10px 4px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-snap-type: x proximity;
+}
+
+.date-slider-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.date-card {
+  flex: 0 0 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 6px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  scroll-snap-align: center;
+}
+
+.date-card .day-name {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.date-card .day-num-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 60px;
+  border-radius: 18px;
+  transition: all 0.3s ease;
+}
+
+.date-card .day-num {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-main);
+  line-height: 1;
+}
+
+.date-card .month-name {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* Selected State - Restored Brand Premium (Gold/Dark) */
+.date-card.selected {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 12px 24px rgba(201, 169, 110, 0.3);
+}
+
+.date-card.selected .day-name {
+  color: #000;
+  font-weight: 700;
+}
+
+.date-card.selected .day-num-box {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.date-card.selected .day-num {
+  color: var(--primary);
+}
+
+.date-card.selected .month-name {
+  color: rgba(201, 169, 110, 0.8);
+}
+
+/* Hover effects */
+.date-card:not(.selected):hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--color-primary);
+}

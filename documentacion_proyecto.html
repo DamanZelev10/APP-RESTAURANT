@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentación Técnica — Rosé Cafe Bar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #c8a455;
+      --dark: #111111;
+      --card: #1a1a1a;
+      --muted: #888;
+      --border: #2a2a2a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--dark); color: #e0e0e0; line-height: 1.7; }
+
+    /* Print styles */
+    @media print {
+      body { background: white; color: #222; font-size: 11pt; }
+      .page-break { page-break-before: always; }
+      .cover { background: #111 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .section { border: 1px solid #ddd; background: white; }
+      h2 { color: #222 !important; }
+      h3 { color: #444 !important; }
+      .badge { border: 1px solid #888; }
+      code { background: #f4f4f4; color: #333; }
+      .toc a { color: #333; }
+    }
+
+    .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+    /* Cover */
+    .cover {
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1028 100%);
+      padding: 100px 40px;
+      text-align: center;
+      border-bottom: 3px solid var(--gold);
+      margin-bottom: 40px;
+    }
+    .cover h1 { font-size: 48px; font-weight: 800; letter-spacing: 3px; color: #fff; }
+    .cover h1 span { color: var(--gold); }
+    .cover .sub { font-size: 14px; letter-spacing: 5px; color: var(--muted); margin-top: 8px; }
+    .cover .doc-title { font-size: 22px; color: var(--gold); margin-top: 40px; font-weight: 600; }
+    .cover .doc-meta { color: var(--muted); font-size: 14px; margin-top: 16px; }
+
+    /* TOC */
+    .toc { margin-bottom: 40px; padding: 30px; background: var(--card); border-radius: 12px; border: 1px solid var(--border); }
+    .toc h2 { font-size: 20px; margin-bottom: 16px; color: var(--gold); }
+    .toc ol { padding-left: 20px; }
+    .toc li { margin-bottom: 8px; }
+    .toc a { color: var(--gold); text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+
+    /* Sections */
+    .section { background: var(--card); border-radius: 12px; border: 1px solid var(--border); padding: 32px; margin-bottom: 32px; }
+    h2 { font-size: 24px; font-weight: 700; color: var(--gold); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    h3 { font-size: 18px; font-weight: 600; color: #ccc; margin: 20px 0 12px; }
+    h4 { font-size: 15px; font-weight: 600; color: var(--gold); margin: 14px 0 8px; }
+    p, li { font-size: 14px; color: #bbb; }
+    ul, ol { padding-left: 20px; margin: 8px 0 16px; }
+    li { margin-bottom: 6px; }
+
+    code {
+      background: rgba(200,164,85,0.1);
+      color: var(--gold);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    pre {
+      background: #0d0d0d;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 12px 0;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #ccc;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    th { background: rgba(200,164,85,0.15); color: var(--gold); text-align: left; padding: 10px 12px; font-weight: 600; }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: #bbb; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      margin: 2px;
+    }
+    .badge-green { background: rgba(30,215,96,0.15); color: #1ed760; }
+    .badge-yellow { background: rgba(248,225,54,0.15); color: #f8e136; }
+    .badge-blue { background: rgba(66,133,244,0.15); color: #4285f4; }
+    .badge-red { background: rgba(255,75,75,0.15); color: #ff4b4b; }
+
+    .arch-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 16px 0;
+    }
+    .arch-item {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .arch-item h4 { margin-top: 0; }
+
+    .footer { text-align: center; padding: 40px; color: var(--muted); font-size: 12px; }
+  </style>
+</head>
+<body>
+
+<!-- ======================== PORTADA ======================== -->
+<div class="cover">
+  <h1>ROSÉ<span>.</span></h1>
+  <div class="sub">CAFE BAR</div>
+  <div class="doc-title">Documentación Técnica del Proyecto</div>
+  <div class="doc-title" style="font-size:16px; margin-top:8px;">Sistema de Gestión de Reservas</div>
+  <div class="doc-meta">
+    Versión 1.0 &nbsp;•&nbsp; Marzo 2026<br>
+    Single-Page Application (SPA) — React + Vite
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ======================== ÍNDICE ======================== -->
+<div class="toc">
+  <h2>📑 Tabla de Contenidos</h2>
+  <ol>
+    <li><a href="#s1">Resumen Ejecutivo</a></li>
+    <li><a href="#s2">Stack Tecnológico</a></li>
+    <li><a href="#s3">Arquitectura del Proyecto</a></li>
+    <li><a href="#s4">Backend — Capa de Datos y Lógica</a></li>
+    <li><a href="#s5">Frontend — Componentes y Vistas</a></li>
+    <li><a href="#s6">Sistema de Diseño (Design System)</a></li>
+    <li><a href="#s7">Enrutamiento y Autenticación</a></li>
+    <li><a href="#s8">Internacionalización (i18n)</a></li>
+    <li><a href="#s9">Análisis de Competidores</a></li>
+    <li><a href="#s10">Funcionalidades Implementadas</a></li>
+    <li><a href="#s11">Mapa de Archivos</a></li>
+    <li><a href="#s12">Guía de Desarrollo y Despliegue</a></li>
+    <li><a href="#s13">Roadmap y Próximos Pasos</a></li>
+  </ol>
+</div>
+
+<!-- ======================== 1. RESUMEN ======================== -->
+<div class="section" id="s1">
+  <h2>1. Resumen Ejecutivo</h2>
+  <p><strong>Rosé Cafe Bar — Sistema de Gestión de Reservas</strong> es una aplicación web de página única (SPA) desarrollada para administrar las reservaciones del restaurante Rosé Cafe Bar. La aplicación resuelve dos necesidades fundamentales:</p>
+  <ul>
+    <li><strong>Para el cliente:</strong> Un formulario público, elegante y optimizado para móviles donde puede solicitar una reserva en menos de 30 segundos.</li>
+    <li><strong>Para el administrador:</strong> Un panel de control protegido con dashboard de métricas, gestión completa de reservas (CRUD) y confirmación directa por WhatsApp.</li>
+  </ul>
+  <h3>Objetivos Clave</h3>
+  <ul>
+    <li>Reducir los <em>No-Shows</em> mediante confirmación vía WhatsApp</li>
+    <li>Eliminar la gestión manual telefónica de reservas</li>
+    <li>Proveer métricas operativas en tiempo real al administrador</li>
+    <li>Experiencia bilingüe (Español / Inglés) para clientes</li>
+    <li>Interfaz premium con modo oscuro, animaciones y diseño responsive</li>
+  </ul>
+</div>
+
+<!-- ======================== 2. STACK ======================== -->
+<div class="section" id="s2">
+  <h2>2. Stack Tecnológico</h2>
+  <table>
+    <thead>
+      <tr><th>Categoría</th><th>Tecnología</th><th>Versión</th><th>Propósito</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Framework UI</td><td>React</td><td>18.3.1</td><td>Biblioteca principal de componentes</td></tr>
+      <tr><td>Bundler</td><td>Vite</td><td>5.4.10</td><td>Build tool y servidor de desarrollo con HMR</td></tr>
+      <tr><td>Enrutamiento</td><td>React Router DOM</td><td>7.13.2</td><td>Navegación SPA (client-side routing)</td></tr>
+      <tr><td>Gráficos</td><td>Recharts</td><td>3.8.1</td><td>Visualización de datos en el Dashboard</td></tr>
+      <tr><td>Iconografía</td><td>Lucide React</td><td>1.7.0</td><td>Sistema de iconos SVG</td></tr>
+      <tr><td>Tipografía</td><td>Google Fonts (Inter)</td><td>—</td><td>Fuente principal de la UI</td></tr>
+      <tr><td>Estilos</td><td>Vanilla CSS</td><td>—</td><td>CSS modular por componente</td></tr>
+      <tr><td>Almacenamiento</td><td>localStorage</td><td>—</td><td>Persistencia de datos sin backend</td></tr>
+      <tr><td>Linting</td><td>ESLint</td><td>9.13.0</td><td>Calidad y consistencia de código</td></tr>
+      <tr><td>Plugin React</td><td>@vitejs/plugin-react</td><td>4.3.3</td><td>Soporte JSX + Fast Refresh</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ======================== 3. ARQUITECTURA ======================== -->
+<div class="section page-break" id="s3">
+  <h2>3. Arquitectura del Proyecto</h2>
+  <p>La aplicación sigue una arquitectura de <strong>Single-Page Application (SPA)</strong> con separación clara entre la capa pública (cliente) y la capa privada (administrador).</p>
+  <pre>
+┌─────────────────────────────────────────────────────┐
+│                    index.html                       │
+│              (Punto de entrada HTML)                │
+└───────────────────────┬─────────────────────────────┘
+                        │
+                   main.jsx
+              (BrowserRouter + App)
+                        │
+            ┌───────────┼───────────────┐
+            │           │               │
+     Ruta: /        Ruta: /login    Ruta: /admin/*
+   LandingPage       Login        ProtectedRoute
+   (Público)      (Auth Gate)    ┌───────────────┐
+                                 │  AdminLayout   │
+                                 │  ┌──────────┐  │
+                                 │  │ Sidebar   │  │
+                                 │  ├──────────┤  │
+                                 │  │Dashboard │  │
+                                 │  │   ó      │  │
+                                 │  │Reservas  │  │
+                                 │  └──────────┘  │
+                                 └───────────────┘
+  </pre>
+
+  <h3>Flujo de Datos</h3>
+  <pre>
+Cliente (LandingPage)          Admin (Dashboard / Reservations)
+       │                                │
+       │  addReservation()              │  getReservations()
+       └──────────┐    ┌────────────────┘  addReservation()
+                  │    │                   updateReservation()
+                  ▼    ▼                   deleteReservation()
+           ┌──────────────────┐
+           │   localStorage   │  ← storage.js (capa de abstracción)
+           │ "restaurant_     │
+           │  reservations"   │
+           └──────────────────┘
+  </pre>
+</div>
+
+<!-- ======================== 4. BACKEND ======================== -->
+<div class="section" id="s4">
+  <h2>4. Backend — Capa de Datos y Lógica</h2>
+  <p>Dado que es un MVP sin servidor, toda la lógica de "backend" reside en el navegador.</p>
+
+  <h3>4.1 Módulo de Almacenamiento — <code>src/lib/storage.js</code></h3>
+  <p>Capa de abstracción sobre <code>localStorage</code> que implementa operaciones CRUD completas.</p>
+
+  <h4>Funciones de Reservas</h4>
+  <table>
+    <thead><tr><th>Función</th><th>Descripción</th><th>Retorno</th></tr></thead>
+    <tbody>
+      <tr><td><code>getReservations()</code></td><td>Obtiene todas las reservas del storage</td><td><code>Array&lt;Reservation&gt;</code></td></tr>
+      <tr><td><code>saveReservations(arr)</code></td><td>Persiste el array completo en localStorage</td><td><code>void</code></td></tr>
+      <tr><td><code>addReservation(data)</code></td><td>Agrega nueva reserva con UUID y timestamp automáticos</td><td><code>Reservation</code></td></tr>
+      <tr><td><code>updateReservation(id, data)</code></td><td>Actualiza campos de una reserva existente</td><td><code>Reservation | null</code></td></tr>
+      <tr><td><code>deleteReservation(id)</code></td><td>Elimina una reserva por su ID</td><td><code>void</code></td></tr>
+    </tbody>
+  </table>
+
+  <h4>Modelo de Datos — Reservación</h4>
+  <pre>{
+  id: "uuid-v4",           // Generado con crypto.randomUUID()
+  name: "Juan Pérez",      // Nombre del cliente
+  phone: "+52 123 456 78", // Número de WhatsApp
+  date: "2026-03-30",      // Fecha ISO
+  time: "20:00",           // Hora HH:mm
+  pax: 4,                  // Número de personas
+  status: "Pending",       // "Pending" | "Confirmed"
+  createdAt: "ISO-8601"    // Fecha de creación automática
+}</pre>
+
+  <h4>Funciones de Autenticación</h4>
+  <table>
+    <thead><tr><th>Función</th><th>Descripción</th></tr></thead>
+    <tbody>
+      <tr><td><code>loginAdmin(user, pass)</code></td><td>Valida credenciales (admin/admin) y guarda token en localStorage</td></tr>
+      <tr><td><code>logoutAdmin()</code></td><td>Elimina el token de autenticación</td></tr>
+      <tr><td><code>isAuthenticated()</code></td><td>Verifica si existe una sesión activa</td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.2 Módulo de Traducciones — <code>src/lib/translations.js</code></h3>
+  <p>Diccionario ligero con 26 claves traducidas a Español e Inglés. Expone la función <code>getTranslation(lang, key)</code> con fallback automático al inglés.</p>
+</div>
+
+<!-- ======================== 5. FRONTEND ======================== -->
+<div class="section page-break" id="s5">
+  <h2>5. Frontend — Componentes y Vistas</h2>
+  <p>La aplicación consta de <strong>6 componentes React</strong>, cada uno con su propio archivo CSS modular.</p>
+
+  <h3>5.1 LandingPage — Página Pública</h3>
+  <p><span class="badge badge-green">Ruta: /</span></p>
+  <ul>
+    <li><strong>Hero visual</strong> con imagen de fondo, overlay degradado y blur</li>
+    <li><strong>Logo + branding</strong> de Rosé Cafe Bar</li>
+    <li><strong>Toggle de idioma</strong> ES/EN en el header</li>
+    <li><strong>Formulario de reserva</strong> con campos: nombre, teléfono WhatsApp, fecha (DateSlider), hora, número de personas</li>
+    <li><strong>Selector de personas</strong> visual con botones 1-6 y opción "7+" con prompt</li>
+    <li><strong>Modal de confirmación</strong> con resumen de datos antes de enviar</li>
+    <li><strong>Pantalla de éxito</strong> post-envío con indicador de estado "Pendiente"</li>
+  </ul>
+
+  <h3>5.2 DateSlider — Selector de Fecha Táctil</h3>
+  <p>Componente de scroll horizontal que muestra los próximos 30 días como tarjetas seleccionables. Optimizado para dispositivos táctiles con <code>scroll-snap</code>.</p>
+
+  <h3>5.3 Login — Acceso Administrativo</h3>
+  <p><span class="badge badge-yellow">Ruta: /login</span></p>
+  <ul>
+    <li>Formulario de credenciales con logo del restaurante</li>
+    <li>Manejo de errores con mensajes visuales</li>
+    <li>Botón de "Volver a la página principal"</li>
+    <li>Credenciales: <code>admin</code> / <code>admin</code></li>
+  </ul>
+
+  <h3>5.4 Dashboard — Panel de Métricas</h3>
+  <p><span class="badge badge-blue">Ruta: /admin (pestaña Dashboard)</span></p>
+  <ul>
+    <li><strong>3 tarjetas de KPIs:</strong> Reservas de hoy, del mes y del trimestre</li>
+    <li><strong>Gráfico de área</strong> (Recharts) con actividad de los últimos 7 días</li>
+    <li><strong>Panel "Próximas Hoy":</strong> Lista cronológica de reservas pendientes para el día actual</li>
+  </ul>
+
+  <h3>5.5 Reservations — Gestión CRUD</h3>
+  <p><span class="badge badge-blue">Ruta: /admin (pestaña Reservaciones)</span></p>
+  <ul>
+    <li><strong>Tabla completa</strong> con columnas: Cliente, Contacto, Fecha, Hora/Personas, Estado, Acciones</li>
+    <li><strong>Barra de búsqueda</strong> en tiempo real por nombre o teléfono</li>
+    <li><strong>Badges de estado:</strong> <span class="badge badge-green">Confirmada</span> <span class="badge badge-yellow" style="color:#ffa500">Pendiente</span></li>
+    <li><strong>Acciones por reserva:</strong>
+      <ul>
+        <li>✅ Confirmar + enviar WhatsApp automático con mensaje personalizado</li>
+        <li>✏️ Editar (modal con formulario pre-llenado)</li>
+        <li>🗑️ Eliminar (con confirmación)</li>
+      </ul>
+    </li>
+    <li><strong>Modal de creación/edición</strong> con campos: nombre, teléfono, fecha, hora, personas</li>
+  </ul>
+
+  <h3>5.6 Sidebar — Navegación del Admin</h3>
+  <ul>
+    <li>Logo y branding</li>
+    <li>Navegación: Panel Interno / Reservaciones (con indicador de tab activo)</li>
+    <li>Footer: Configuración y Cerrar Sesión</li>
+  </ul>
+</div>
+
+<!-- ======================== 6. DESIGN SYSTEM ======================== -->
+<div class="section" id="s6">
+  <h2>6. Sistema de Diseño (Design System)</h2>
+
+  <h3>6.1 Variables CSS (Tokens)</h3>
+  <table>
+    <thead><tr><th>Token</th><th>Valor</th><th>Uso</th></tr></thead>
+    <tbody>
+      <tr><td><code>--color-bg-main</code></td><td>#0a0a0a</td><td>Fondo principal (dark)</td></tr>
+      <tr><td><code>--color-bg-card</code></td><td>#141414</td><td>Tarjetas y paneles</td></tr>
+      <tr><td><code>--color-primary</code></td><td>#f8e136</td><td>Amarillo de marca Rosé</td></tr>
+      <tr><td><code>--color-text-main</code></td><td>#ffffff</td><td>Texto principal</td></tr>
+      <tr><td><code>--color-text-muted</code></td><td>#a0a0a0</td><td>Texto secundario</td></tr>
+      <tr><td><code>--color-danger</code></td><td>#ff4b4b</td><td>Acciones destructivas</td></tr>
+      <tr><td><code>--border-radius</code></td><td>12px</td><td>Bordes redondeados generales</td></tr>
+    </tbody>
+  </table>
+
+  <h3>6.2 Componentes Reutilizables CSS</h3>
+  <ul>
+    <li><code>.card</code> — Contenedor con fondo oscuro, borde y padding</li>
+    <li><code>.btn-primary</code> — Botón amarillo con texto negro + hover con elevación</li>
+    <li><code>.btn-danger</code> — Botón destructivo con borde rojo</li>
+    <li><code>.btn-secondary</code> — Botón transparente con borde</li>
+    <li><code>.modal-overlay</code> — Overlay con blur para modales</li>
+    <li><code>.animate-fade-in</code> — Animación de entrada con desplazamiento</li>
+  </ul>
+
+  <h3>6.3 Tipografía y Fuente</h3>
+  <p>Fuente: <strong>Inter</strong> (Google Fonts) con pesos 400–800. Cargada con <code>preconnect</code> para rendimiento óptimo.</p>
+</div>
+
+<!-- ======================== 7. ROUTING + AUTH ======================== -->
+<div class="section" id="s7">
+  <h2>7. Enrutamiento y Autenticación</h2>
+
+  <h3>7.1 Rutas</h3>
+  <table>
+    <thead><tr><th>Ruta</th><th>Componente</th><th>Acceso</th><th>Descripción</th></tr></thead>
+    <tbody>
+      <tr><td><code>/</code></td><td>LandingPage</td><td><span class="badge badge-green">Público</span></td><td>Formulario de reservas para clientes</td></tr>
+      <tr><td><code>/login</code></td><td>Login</td><td><span class="badge badge-green">Público</span></td><td>Formulario de autenticación</td></tr>
+      <tr><td><code>/admin/*</code></td><td>AdminLayout</td><td><span class="badge badge-red">Protegido</span></td><td>Panel administrativo (Dashboard + Reservas)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>7.2 Componente ProtectedRoute</h3>
+  <p>HOC que verifica <code>isAuthenticated()</code> antes de renderizar las rutas de admin. Redirige automáticamente a <code>/login</code> si no hay sesión activa.</p>
+
+  <h3>7.3 Flujo de Autenticación</h3>
+  <pre>
+Cliente pulsa "Admin Panel" → /login → Ingresa credenciales
+  → loginAdmin("admin","admin") → localStorage["restaurant_auth_token"] = "authenticated"
+  → Navigate → /admin → ProtectedRoute verifica → AdminLayout renderiza
+
+Cerrar Sesión → logoutAdmin() → Remove token → Navigate → /
+  </pre>
+</div>
+
+<!-- ======================== 8. i18n ======================== -->
+<div class="section" id="s8">
+  <h2>8. Internacionalización (i18n)</h2>
+  <p>La landing page soporta dos idiomas con un toggle visual ES | EN. El panel de admin permanece exclusivamente en español.</p>
+  <ul>
+    <li><strong>Implementación:</strong> Diccionario JSON en <code>translations.js</code> con 26 claves</li>
+    <li><strong>Estado:</strong> <code>useState('es')</code> en LandingPage</li>
+    <li><strong>Uso:</strong> Función <code>t(key)</code> como wrapper de <code>getTranslation(lang, key)</code></li>
+    <li><strong>Fallback:</strong> Si una clave no existe en el idioma seleccionado, retorna la versión en inglés</li>
+    <li><strong>Localización de fechas:</strong> <code>toLocaleDateString('es-ES')</code> / <code>toLocaleDateString('en-US')</code></li>
+  </ul>
+</div>
+
+<!-- ======================== 9. COMPETIDORES ======================== -->
+<div class="section page-break" id="s9">
+  <h2>9. Análisis de Competidores</h2>
+  <p>Se realizó un estudio de mercado de las principales plataformas de reservas:</p>
+  <table>
+    <thead><tr><th>Plataforma</th><th>Enfoque Principal</th></tr></thead>
+    <tbody>
+      <tr><td><strong>OpenTable</strong></td><td>Red de adquisición de clientes masiva</td></tr>
+      <tr><td><strong>Resy (Amex)</strong></td><td>Restaurantes de alta gama, analítica profunda</td></tr>
+      <tr><td><strong>Tock</strong></td><td>Eventos cerrados, cobro anticipado anti no-shows</td></tr>
+      <tr><td><strong>Yelp Guest Manager</strong></td><td>Gestión de listas de espera</td></tr>
+      <tr><td><strong>SevenRooms</strong></td><td>CRM avanzado, reservas directas sin comisiones</td></tr>
+      <tr><td><strong>Eat App</strong></td><td>Solución cloud ágil para tablets/móviles</td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top:16px"><strong>Conclusión Estratégica:</strong> El proyecto implementa el 20% de funcionalidades que resuelven el 80% de los problemas: formulario ágil de reservas + dashboard operativo + confirmación por WhatsApp.</p>
+</div>
+
+<!-- ======================== 10. FUNCIONALIDADES ======================== -->
+<div class="section" id="s10">
+  <h2>10. Funcionalidades Implementadas</h2>
+  <div class="arch-box">
+    <div class="arch-item">
+      <h4>✅ Reserva Pública 24/7</h4>
+      <p>Formulario optimizado para móvil con selector de fecha táctil tipo slider.</p>
+    </div>
+    <div class="arch-item">
+      <h4>✅ Confirmación por WhatsApp</h4>
+      <p>Al confirmar una reserva, se abre WhatsApp Web con mensaje pre-redactado.</p>
+    </div>
+    <div class="arch-item">
+      <h4>✅ Dashboard con KPIs</h4>
+      <p>Métricas de hoy, mes y trimestre + gráfico de actividad semanal.</p>
+    </div>
+    <div class="arch-item">
+      <h4>✅ CRUD Completo</h4>
+      <p>Crear, leer, editar y eliminar reservas con modales y búsqueda en tiempo real.</p>
+    </div>
+    <div class="arch-item">
+      <h4>✅ Autenticación Admin</h4>
+      <p>Login protegido con ProtectedRoute y gestión de sesión en localStorage.</p>
+    </div>
+    <div class="arch-item">
+      <h4>✅ Bilingüe ES/EN</h4>
+      <p>Toggle de idioma en landing con diccionario de traducciones completo.</p>
+    </div>
+    <div class="arch-item">
+      <h4>✅ Diseño Premium Dark</h4>
+      <p>UI con glassmorphism, gradientes, micro-animaciones y modo oscuro.</p>
+    </div>
+    <div class="arch-item">
+      <h4>✅ Responsive Design</h4>
+      <p>Adaptable a móvil, tablet y escritorio con media queries.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== 11. FILE MAP ======================== -->
+<div class="section" id="s11">
+  <h2>11. Mapa de Archivos</h2>
+  <pre>
+APP RESTAURANT/
+├── index.html                    # HTML raíz con meta SEO y fuentes
+├── package.json                  # Dependencias y scripts (dev, build, lint)
+├── vite.config.js                # Configuración Vite + hosts permitidos
+├── eslint.config.js              # Reglas de linting
+├── .gitignore                    # Exclusiones de Git
+├── Logo.png                      # Logo de Rosé Cafe Bar
+├── competidores.md               # Análisis de competidores
+│
+├── public/
+│   ├── hero-bg.png               # Imagen de fondo del hero
+│   └── vite.svg                  # Favicon Vite por defecto
+│
+├── src/
+│   ├── main.jsx                  # Entry point (BrowserRouter + App)
+│   ├── App.jsx                   # Router principal + ProtectedRoute
+│   ├── App.css                   # Layout del admin (flex container)
+│   ├── index.css                 # Design system: tokens + componentes globales
+│   │
+│   ├── components/
+│   │   ├── LandingPage.jsx       # Página pública de reservas
+│   │   ├── LandingPage.css       # Estilos del landing (hero, form, pax)
+│   │   ├── DateSlider.jsx        # Selector de fecha horizontal táctil
+│   │   ├── DateSlider.css        # Estilos del slider (cards, snap)
+│   │   ├── Login.jsx             # Formulario de autenticación
+│   │   ├── Login.css             # Estilos del login
+│   │   ├── Dashboard.jsx         # Panel de KPIs y gráficos
+│   │   ├── Dashboard.css         # Estilos del dashboard
+│   │   ├── Reservations.jsx      # Tabla CRUD de reservaciones
+│   │   ├── Reservations.css      # Estilos tabla, modales, badges
+│   │   ├── Sidebar.jsx           # Navegación lateral del admin
+│   │   └── Sidebar.css           # Estilos del sidebar
+│   │
+│   ├── lib/
+│   │   ├── storage.js            # CRUD localStorage + Auth
+│   │   └── translations.js       # Diccionario ES/EN (26 claves)
+│   │
+│   └── assets/
+│       └── react.svg             # Logo React por defecto
+│
+└── dist/                         # Build de producción (Vite)
+  </pre>
+</div>
+
+<!-- ======================== 12. DEV GUIDE ======================== -->
+<div class="section" id="s12">
+  <h2>12. Guía de Desarrollo y Despliegue</h2>
+
+  <h3>12.1 Comandos Disponibles</h3>
+  <table>
+    <thead><tr><th>Comando</th><th>Descripción</th></tr></thead>
+    <tbody>
+      <tr><td><code>npm run dev</code></td><td>Inicia servidor de desarrollo con HMR (Hot Module Replacement)</td></tr>
+      <tr><td><code>npm run build</code></td><td>Genera build de producción en <code>/dist</code></td></tr>
+      <tr><td><code>npm run preview</code></td><td>Previsualiza el build de producción localmente</td></tr>
+      <tr><td><code>npm run lint</code></td><td>Ejecuta ESLint para verificar calidad de código</td></tr>
+    </tbody>
+  </table>
+
+  <h3>12.2 Pruebas en Dispositivo Móvil</h3>
+  <p>Se configuró <code>localtunnel</code> para exponer el servidor local a internet y probar en dispositivos físicos durante desarrollo. El host <code>pretty-dodos-repair.loca.lt</code> está permitido en <code>vite.config.js</code>.</p>
+
+  <h3>12.3 Despliegue</h3>
+  <p>El build de producción (<code>npm run build</code>) genera archivos estáticos en <code>/dist</code> que pueden desplegarse en cualquier hosting estático: Vercel, Netlify, GitHub Pages, Firebase Hosting, etc.</p>
+</div>
+
+<!-- ======================== 13. ROADMAP ======================== -->
+<div class="section" id="s13">
+  <h2>13. Roadmap y Próximos Pasos</h2>
+  <table>
+    <thead><tr><th>Prioridad</th><th>Funcionalidad</th><th>Estado</th></tr></thead>
+    <tbody>
+      <tr><td>🔴 Alta</td><td>Backend real con base de datos (Supabase / Firebase)</td><td>Pendiente</td></tr>
+      <tr><td>🔴 Alta</td><td>Autenticación segura (JWT / OAuth)</td><td>Pendiente</td></tr>
+      <tr><td>🟡 Media</td><td>Plano visual interactivo de mesas</td><td>Pendiente</td></tr>
+      <tr><td>🟡 Media</td><td>CRM simplificado (etiquetas VIP, alergias, notas)</td><td>Pendiente</td></tr>
+      <tr><td>🟡 Media</td><td>Integración API WhatsApp Business (envío automático real)</td><td>Pendiente</td></tr>
+      <tr><td>🟢 Baja</td><td>Lista de espera digital (Walk-ins)</td><td>Pendiente</td></tr>
+      <tr><td>🟢 Baja</td><td>Notificaciones push / SMS automatizados</td><td>Pendiente</td></tr>
+      <tr><td>🟢 Baja</td><td>Integración con TPV/POS</td><td>Pendiente</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ======================== FOOTER ======================== -->
+<div class="footer">
+  <p>Rosé Cafe Bar — Documentación Técnica v1.0 — Marzo 2026</p>
+  <p>Generado automáticamente • Single-Page Application con React + Vite</p>
+</div>
+
+</div>
+</body>
+</html>
