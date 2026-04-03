@@ -286,3 +286,89 @@
   color: var(--color-text-main);
   white-space: pre-wrap;
 }
+
+/* Premium Quick Actions & Table States */
+.btn-action {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+}
+
+.btn-action:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn-action:active {
+  transform: translateY(0);
+}
+
+.data-table tbody tr {
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.data-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 1024px) {
+  .reservations {
+    padding: 20px 16px;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 20px;
+  }
+
+  .dashboard-header .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .table-controls {
+    flex-direction: column;
+    align-items: stretch !important;
+    padding: 16px !important;
+  }
+
+  .filters {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .filters > div, 
+  .filters > select, 
+  .filters > button,
+  .date-picker-container {
+    max-width: none !important;
+    width: 100% !important;
+  }
+
+  .hidden-mobile {
+    display: none;
+  }
+
+  /* Data Table Mobile Optimizations */
+  .data-table th:nth-child(3), 
+  .data-table td:nth-child(3),
+  .data-table th:nth-child(5), 
+  .data-table td:nth-child(5) {
+    display: none; /* Hide Pax and Source on very small screens if needed, or just scrolling */
+  }
+
+  .data-table th, .data-table td {
+    padding: 12px 8px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .data-table th:nth-child(4), 
+  .data-table td:nth-child(4) {
+    display: none; /* Hide Status on very small screens */
+  }
+}
+

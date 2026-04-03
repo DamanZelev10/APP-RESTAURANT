@@ -2,6 +2,10 @@
  * Capacity calculation utilities
  * Calculates available capacity for time slots based on active reservations
  */
+const DEFAULT_BUSINESS_HOURS = {
+  open: '17:00', // 5:00 PM
+  close: '22:00' // 10:00 PM
+};
 
 // Get the first restaurant (single-tenant MVP)
 export async function getDefaultRestaurant(prisma) {
@@ -52,7 +56,7 @@ export async function getAvailableSlots(prisma, restaurantId, date) {
 
   if (!restaurant || !restaurant.settings) return [];
 
-  const dayDate = new Date(date + 'T12:00:00');
+  const dayDate = new Date(date + 'T12:00:00-05:00');
   const dayOfWeek = dayDate.getDay();
   // Ensure the date is valid
   if (isNaN(dayDate.getTime())) {
@@ -65,13 +69,11 @@ export async function getAvailableSlots(prisma, restaurantId, date) {
   });
 
   if (!businessHour) {
-    console.warn(`[Capacity] No business hours configured for weekday ${dayOfWeek} on date ${date}`);
-    return [];
+    console.warn(`[Capacity] No business hours configured for weekday ${dayOfWeek} on date ${date}. Using fallback.`);
   }
 
-  if (!businessHour.isOpen) {
-    console.log(`[Capacity] Date ${date} (Weekday ${dayOfWeek}) is CLOSED.`);
-    return [];
+  if (businessHour && !businessHour.isOpen) {
+    console.log(`[Capacity] Date ${date} (Weekday ${dayOfWeek}) is CLOSED. Using fallback slots for request.`);
   }
 
   const { maxCapacityPerSlot } = restaurant.settings;
@@ -79,8 +81,11 @@ export async function getAvailableSlots(prisma, restaurantId, date) {
 
   // Generate 30-min slots between open and close
   const slots = [];
-  const [openH, openM] = businessHour.openTime.split(':').map(Number);
-  const [closeH, closeM] = businessHour.closeTime.split(':').map(Number);
+  const openTimeStr = DEFAULT_BUSINESS_HOURS.open || (businessHour?.openTime || '18:00');
+  const closeTimeStr = DEFAULT_BUSINESS_HOURS.close || (businessHour?.closeTime || '23:59');
+
+  const [openH, openM] = openTimeStr.split(':').map(Number);
+  const [closeH, closeM] = closeTimeStr.split(':').map(Number);
 
   let currentH = openH;
   let currentM = openM;
@@ -96,6 +101,7 @@ export async function getAvailableSlots(prisma, restaurantId, date) {
       available,
       maxCapacity: maxCapacityPerSlot,
       isFull: available <= 0,
+      isFallback: !businessHour || !businessHour.isOpen
     });
 
     currentM += 30;
@@ -130,27 +136,26 @@ export async function validateReservation(prisma, restaurantId, data) {
     errors.push('Debe haber al menos 1 persona');
   }
 
-  // 2. Business hours check
+  // 2. Business hours check (Soft check - don't block for web requests)
   const dayOfWeek = new Date(data.reservationDate + 'T12:00:00').getDay();
   const businessHour = await prisma.businessHours.findUnique({
     where: { restaurantId_weekday: { restaurantId, weekday: dayOfWeek } },
   });
+  
+  // We don't block here anymore as per USER_REQUEST to remove impediments.
+  // The admin will review the "Pending" reservation.
 
-  if (!businessHour || !businessHour.isOpen) {
-    errors.push('El restaurante está cerrado ese día');
-  } else {
-    if (data.reservationTime < businessHour.openTime || data.reservationTime > businessHour.closeTime) {
-      errors.push(`El horario de atención es de ${businessHour.openTime} a ${businessHour.closeTime}`);
-    }
-  }
-
-  // 3. Minimum advance hours check
-  const now = new Date();
-  const reservationDateTime = new Date(`${data.reservationDate}T${data.reservationTime}:00`);
-  const hoursUntil = (reservationDateTime - now) / (1000 * 60 * 60);
+  // 3. Minimum advance hours check using America/Bogota
+  const now = new Date(); // Internal UTC
+  const reservationDateTime = new Date(`${data.reservationDate}T${data.reservationTime}:00-05:00`);
+  const hoursUntil = (reservationDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
 
   if (hoursUntil < settings.minAdvanceHours) {
-    errors.push(`Las reservas deben hacerse con al menos ${settings.minAdvanceHours} horas de anticipación`);
+    if (hoursUntil < 0) {
+      errors.push('No puedes realizar reservas para horas o fechas que ya han pasado');
+    } else {
+      errors.push(`Las reservas deben hacerse con al menos ${settings.minAdvanceHours} horas de anticipación`);
+    }
   }
 
   // 4. Capacity check

@@ -1,20 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginAdmin } from '../lib/api';
+import { getTranslation } from '../lib/translations';
 import './Login.css';
 
 export default function Login() {
+  const [lang] = useState(localStorage.getItem('rose_lang') || 'es');
+  const t = (key) => getTranslation(lang, key);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (loginAdmin(username, password)) {
+    const ok = await loginAdmin(username, password);
+    if (ok) {
       navigate('/admin');
     } else {
-      setError('Credenciales incorrectas. Intenta de nuevo.');
+      setError(t('errorLogin'));
       setPassword('');
     }
   };
@@ -24,15 +28,15 @@ export default function Login() {
       <div className="login-card animate-fade-in">
         <div className="login-header">
           <img src="/Logo.png" alt="Rose Cafe Logo" className="login-logo" />
-          <h2>Acceso Administrativo</h2>
-          <p>Ingresa para gestionar las reservaciones.</p>
+          <h2>{t('loginTitle')}</h2>
+          <p>{t('loginSubtitle')}</p>
         </div>
         
         {error && <div className="login-error">{error}</div>}
 
         <form onSubmit={handleLogin} className="login-form">
           <div className="form-group">
-            <label>Usuario</label>
+            <label>{t('labelUser')}</label>
             <input 
               type="text" 
               required 
@@ -42,7 +46,7 @@ export default function Login() {
             />
           </div>
           <div className="form-group">
-            <label>Contraseña</label>
+            <label>{t('labelPass')}</label>
             <input 
               type="password" 
               required 
@@ -53,12 +57,12 @@ export default function Login() {
           </div>
           
           <button type="submit" className="btn-primary login-btn">
-            Iniciar Sesión
+            {t('btnLogin')}
           </button>
         </form>
         
         <button className="btn-back" onClick={() => navigate('/')}>
-          Volver a la página principal
+          {t('btnBack')}
         </button>
       </div>
     </div>

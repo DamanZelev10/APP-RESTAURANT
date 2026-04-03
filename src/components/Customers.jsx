@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../lib/api';
-import { Search, User, Calendar, Phone, Star, TrendingUp, History } from 'lucide-react';
+import { Search, User, Star, History, XCircle, Trash2, Ban, CheckCircle } from 'lucide-react';
+import { format12h } from '../utils/formatters';
 
 export default function Customers() {
   const [customers, setCustomers] = useState([]);
@@ -35,6 +36,31 @@ export default function Customers() {
       setSelectedCustomer(data);
     } catch (err) {
       alert('Error: ' + err.message);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar permanentemente a este cliente? Esta acción eliminará todo su historial.')) {
+      try {
+        await api.deleteCustomer(id);
+        setSelectedCustomer(null);
+        loadCustomers();
+      } catch (err) {
+        alert('Error eliminando cliente: ' + err.message);
+      }
+    }
+  };
+
+  const handleToggleSuspend = async (id, currentStatus) => {
+    const action = currentStatus ? 'suspender' : 'reactivar';
+    if (window.confirm(`¿Estás seguro de que deseas ${action} a este cliente?`)) {
+      try {
+        await api.updateCustomerStatus(id, !currentStatus);
+        handleViewDetails(id);
+        loadCustomers();
+      } catch (err) {
+        alert('Error cambiando estado del cliente: ' + err.message);
+      }
     }
   };
 
@@ -84,10 +110,13 @@ export default function Customers() {
                       <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--bg-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <User size={16} color="var(--primary)" />
                       </div>
-                      <span style={{ fontWeight: 600 }}>{c.fullName}</span>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontWeight: 600, color: c.isActive === false ? 'var(--text-muted)' : 'inherit', textDecoration: c.isActive === false ? 'line-through' : 'none' }}>{c.fullName}</span>
+                        {c.isActive === false && <span style={{ fontSize: '10px', color: 'var(--danger)', fontWeight: 600 }}>SUSPENDIDO</span>}
+                      </div>
                     </div>
                   </td>
-                  <td>{c.phone}</td>
+                  <td style={{ opacity: c.isActive === false ? 0.5 : 1 }}>{c.phone}</td>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <Star size={14} color="var(--primary)" fill={c.totalReservations >= 3 ? "var(--primary)" : "none"} />
@@ -116,11 +145,32 @@ export default function Customers() {
                    {selectedCustomer.fullName.substring(0,1)}
                  </div>
                  <div>
-                   <h2 style={{ fontSize: '20px', fontWeight: 700 }}>{selectedCustomer.fullName}</h2>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                     <h2 style={{ fontSize: '20px', fontWeight: 700, color: selectedCustomer.isActive === false ? 'var(--text-muted)' : 'inherit' }}>{selectedCustomer.fullName}</h2>
+                     {selectedCustomer.isActive === false && <span className="badge badge-danger">SUSPENDIDO</span>}
+                   </div>
                    <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>{selectedCustomer.phone}</p>
                  </div>
               </div>
               <button className="btn-icon" onClick={() => setSelectedCustomer(null)}><XCircle size={20} /></button>
+            </div>
+
+            <div className="customer-admin-actions" style={{ display: 'flex', gap: '12px', marginBottom: '24px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <button 
+                className="btn btn-outline" 
+                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: selectedCustomer.isActive === false ? 'var(--primary)' : '#f59e0b', borderColor: selectedCustomer.isActive === false ? 'var(--primary)' : 'rgba(245, 158, 11, 0.3)' }}
+                onClick={() => handleToggleSuspend(selectedCustomer.id, selectedCustomer.isActive)}
+              >
+                {selectedCustomer.isActive === false ? <CheckCircle size={16} /> : <Ban size={16} />}
+                {selectedCustomer.isActive === false ? 'Reactivar Cliente' : 'Suspender Cliente'}
+              </button>
+              <button 
+                className="btn btn-outline" 
+                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+                onClick={() => handleDelete(selectedCustomer.id)}
+              >
+                <Trash2 size={16} /> Eliminar Cliente
+              </button>
             </div>
 
             <div className="kpi-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '32px' }}>
@@ -145,7 +195,7 @@ export default function Customers() {
                   <div key={res.id} style={{ padding: '12px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <div style={{ fontWeight: 600, fontSize: '14px' }}>{res.reservationDate}</div>
-                      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{res.reservationTime} • {res.partySize} pers.</div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{format12h(res.reservationTime)} • {res.partySize} pers.</div>
                     </div>
                     <span className={`badge badge-${res.status}`} style={{ fontSize: '10px' }}>{res.status}</span>
                   </div>

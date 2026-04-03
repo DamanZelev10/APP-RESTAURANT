@@ -12,7 +12,26 @@
 }
 
 .sidebar-header {
-  padding: 0 12px 40px;
+  padding: 0 12px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.close-sidebar-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.close-sidebar-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--primary);
 }
 
 .logo-text {
@@ -91,4 +110,27 @@
 
 .nav-item.logout:hover {
   background: rgba(239, 68, 68, 0.1);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 1024px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 280px;
+    height: 100vh;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
+    background: #0a0a0a;
+    padding: 24px 16px;
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .close-sidebar-btn {
+    display: flex;
+  }
 }

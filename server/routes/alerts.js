@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { getDefaultRestaurant, getSlotCapacity } from '../utils/capacity.js';
+import { format12h } from '../utils/date.js';
 
 const router = Router();
 
@@ -31,7 +32,7 @@ router.get('/', async (req, res) => {
         id: `upcoming-${res.id}`,
         type: 'info',
         title: 'Próxima Reserva',
-        message: `${res.fullName} llega a las ${res.reservationTime} (${res.partySize} personas)`,
+        message: `${res.fullName} llega a las ${format12h(res.reservationTime)} (${res.partySize} personas)`,
         reservationId: res.id,
         action: 'view'
       });
@@ -82,7 +83,6 @@ router.get('/', async (req, res) => {
     });
 
     // 4. Overbooked check (very simple: any slot > max capacity)
-    // For MVP, we'll just check if any slot for today is over 90% full
     const { maxCapacityPerSlot } = restaurant.settings;
     const capacityToday = await req.prisma.reservation.groupBy({
       by: ['reservationTime'],
@@ -101,7 +101,7 @@ router.get('/', async (req, res) => {
           id: `overbook-${slot.reservationTime}`,
           type: 'critical',
           title: 'Slot casi lleno',
-          message: `El horario de las ${slot.reservationTime} tiene ${sum}/${maxCapacityPerSlot} personas reservadas.`,
+          message: `El horario de las ${format12h(slot.reservationTime)} tiene ${sum}/${maxCapacityPerSlot} personas reservadas.`,
           action: 'view-time',
           meta: { time: slot.reservationTime }
         });

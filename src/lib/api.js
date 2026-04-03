@@ -36,6 +36,10 @@ export const api = {
   deleteReservation: (id) => request(`/reservations/${id}`, { method: 'DELETE' }),
   getAvailableSlots: (date) => request(`/reservations/slots?date=${date}`),
   sendWhatsApp: (id, type) => request(`/reservations/${id}/whatsapp`, { method: 'POST', body: JSON.stringify({ type }) }),
+  
+  // ─── Customer Portal ───────────────────────────────────
+  searchCustomerReservations: (phone) => request(`/reservations/customer-search?phone=${encodeURIComponent(phone)}`),
+  customerAction: (id, action) => request(`/reservations/${id}/customer-action`, { method: 'PATCH', body: JSON.stringify({ action }) }),
 
   // ─── Dashboard ─────────────────────────────────────────
   getDashboardMetrics: () => request('/dashboard'),
@@ -46,6 +50,8 @@ export const api = {
     return request(`/customers?${params}`);
   },
   getCustomer: (id) => request(`/customers/${id}`),
+  updateCustomerStatus: (id, isActive) => request(`/customers/${id}/status`, { method: 'PUT', body: JSON.stringify({ isActive }) }),
+  deleteCustomer: (id) => request(`/customers/${id}`, { method: 'DELETE' }),
 
   // ─── Settings ───────────────────────────────────────────
   getRestaurant: () => request('/settings'),
@@ -57,6 +63,11 @@ export const api = {
 
   // ─── Alerts ────────────────────────────────────────────
   getAlerts: () => request('/alerts'),
+
+  // ─── Payments ──────────────────────────────────────────
+  createPaymentCheckout: (reservationId) => request('/payments/create-checkout', { method: 'POST', body: JSON.stringify({ reservationId }) }),
+  getPaymentStatus: (reservationId) => request(`/payments/status/${reservationId}`),
+  simulateWebhook: (provider, payload) => request(`/payments/webhook/${provider}`, { method: 'POST', body: JSON.stringify(payload) }),
 };
 
 // ─── AUTH LOGIC (Simple placeholder) ───────────────────

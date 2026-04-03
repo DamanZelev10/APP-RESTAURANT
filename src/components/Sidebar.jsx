@@ -1,9 +1,9 @@
-import { LayoutDashboard, CalendarDays, Users, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, Users, Settings, LogOut, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { logoutAdmin } from '../lib/api';
 import './Sidebar.css';
 
-export default function Sidebar({ activeTab, setActiveTab }) {
+export default function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -19,10 +19,15 @@ export default function Sidebar({ activeTab, setActiveTab }) {
   ];
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div className="sidebar-header">
-        <h2 className="logo-text">ROSÉ<span>.</span></h2>
-        <p className="subtitle">CAFE BAR</p>
+        <div className="logo-box">
+          <h2 className="logo-text">ROSÉ<span>.</span></h2>
+          <p className="subtitle">CAFE BAR</p>
+        </div>
+        <button className="close-sidebar-btn" onClick={() => setIsOpen(false)}>
+          <X size={20} />
+        </button>
       </div>
       
       <nav className="sidebar-nav">

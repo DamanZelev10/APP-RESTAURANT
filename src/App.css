@@ -9,7 +9,6 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 /* Animations that are missing from index.css */
@@ -20,4 +19,76 @@
 
 .page-fade-in {
   animation: pageFadeIn 0.25s ease-out forwards;
+}
+
+/* Mobile Admin Layout */
+.mobile-admin-header {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #0a0a0a;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 90;
+}
+
+.hamburger-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  margin-left: -8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.hamburger-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mobile-logo {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #fff;
+}
+
+.mobile-logo span {
+  color: var(--primary);
+}
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 95;
+  animation: fadeIn 0.3s ease;
+}
+
+@media (max-width: 1024px) {
+  .app-container {
+    flex-direction: column;
+    overflow: auto;
+  }
+
+  .main-content {
+    width: 100%;
+    min-height: 100vh;
+  }
+
+  .mobile-admin-header {
+    display: flex;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

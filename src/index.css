@@ -44,6 +44,12 @@ body {
   min-width: 0; /* Important for flex children scrolling */
 }
 
+@media (max-width: 1024px) {
+  .main-content {
+    padding: 24px 16px;
+  }
+}
+
 /* ─── Dashboard ────────────────────────────────────────── */
 .dashboard {
   max-width: 1400px;
@@ -259,3 +265,24 @@ body {
   font-size: 15px;
 }
 .input:focus { outline: none; border-color: var(--primary); }
+
+/* Utility Classes */
+.hidden-mobile {
+  display: block;
+}
+
+@media (max-width: 1024px) {
+  .hidden-mobile {
+    display: none !important;
+  }
+  
+  .modal-content {
+    padding: 24px;
+    width: 95%;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+  }
+}

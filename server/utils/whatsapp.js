@@ -1,17 +1,14 @@
-/**
- * WhatsApp deep-link message generator
- * Generates pre-filled WhatsApp URLs for reminders and confirmations
- */
+import { format12h } from './date.js';
 
 const TEMPLATES = {
   confirmation_request: (data) =>
-    `Hola ${data.name}, somos ROSÉ Cafe Bar 🌹\n\nPor favor confirma tu reserva para el ${data.date} a las ${data.time} para ${data.partySize} persona(s).\n\nResponde SÍ o NO. ¡Gracias!`,
+    `Hola ${data.name}, somos ROSÉ Cafe Bar 🌹\n\nPor favor confirma tu reserva para el ${data.date} a las ${format12h(data.time)} para ${data.partySize} persona(s).\n\nResponde SÍ o NO. ¡Gracias!`,
 
   reminder: (data) =>
-    `Hola ${data.name} 🌹\n\nTe recordamos tu reserva de hoy a las ${data.time} para ${data.partySize} persona(s) en ROSÉ Cafe Bar.\n\n¡Te esperamos! 🥂`,
+    `Hola ${data.name} 🌹\n\nTe recordamos tu reserva de hoy a las ${format12h(data.time)} para ${data.partySize} persona(s) en ROSÉ Cafe Bar.\n\n¡Te esperamos! 🥂`,
 
   cancellation: (data) =>
-    `Tu reserva para el ${data.date} a las ${data.time} ha sido cancelada.\n\nGracias por avisarnos. ¡Te esperamos pronto en ROSÉ Cafe Bar! 🌹`,
+    `Tu reserva para el ${data.date} a las ${format12h(data.time)} ha sido cancelada.\n\nGracias por avisarnos. ¡Te esperamos pronto en ROSÉ Cafe Bar! 🌹`,
 };
 
 export function generateWhatsAppMessage(type, reservation) {

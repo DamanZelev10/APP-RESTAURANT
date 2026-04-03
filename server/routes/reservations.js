@@ -1,18 +1,27 @@
 import { Router } from 'express';
 import { validateReservation, getAvailableSlots, getDefaultRestaurant, getDayCapacity } from '../utils/capacity.js';
 import { getWhatsAppAction } from '../utils/whatsapp.js';
+import { normalizePhone } from '../utils/phone.js';
 
 const router = Router();
 
 // GET /api/reservations — list with filters
 router.get('/', async (req, res) => {
   try {
-    const { date, status, phone, name, occasion, source } = req.query;
+    const { date, startDate, endDate, status, phone, name, occasion, source } = req.query;
     const restaurant = await getDefaultRestaurant(req.prisma);
     if (!restaurant) return res.status(404).json({ error: 'No restaurant found' });
 
     const where = { restaurantId: restaurant.id };
-    if (date) where.reservationDate = date;
+    
+    if (date) {
+      where.reservationDate = date;
+    } else if (startDate || endDate) {
+      where.reservationDate = {};
+      if (startDate) where.reservationDate.gte = startDate;
+      if (endDate) where.reservationDate.lte = endDate;
+    }
+
     if (status) where.status = status;
     if (source) where.source = source;
     if (occasion) where.occasion = { contains: occasion };
@@ -67,6 +76,44 @@ router.get('/capacity', async (req, res) => {
   }
 });
 
+// GET /api/reservations/customer-search — Search reservations for a customer
+router.get('/customer-search', async (req, res) => {
+  try {
+    const { phone } = req.query;
+    if (!phone) return res.status(400).json({ error: 'Phone is required' });
+
+    const normalizedPhone = normalizePhone(phone);
+    const restaurant = await getDefaultRestaurant(req.prisma);
+    if (!restaurant) return res.status(404).json({ error: 'No restaurant found' });
+
+    // Find upcoming and active reservations (including completed within 1 hour)
+    const reservations = await req.prisma.reservation.findMany({
+      where: {
+        restaurantId: restaurant.id,
+        phone: normalizedPhone,
+        status: { in: ['pending', 'confirmed', 'completed'] }
+      },
+      orderBy: [{ reservationDate: 'asc' }, { reservationTime: 'asc' }],
+    });
+
+    // Filter completed reservations to only those within the 1-hour window (Bogota Timezone)
+    const now = new Date();
+    const filtered = reservations.filter(res => {
+      if (res.status === 'completed') {
+        // Colombia is UTC-5
+        const resDateTime = new Date(`${res.reservationDate}T${res.reservationTime}:00-05:00`);
+        const expiryTime = new Date(resDateTime.getTime() + 60 * 60 * 1000);
+        return expiryTime > now;
+      }
+      return true;
+    });
+
+    res.json(filtered);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/reservations/:id
 router.get('/:id', async (req, res) => {
   try {
@@ -97,10 +144,14 @@ router.post('/', async (req, res) => {
     });
 
     if (customer) {
+      if (!customer.isActive) {
+        return res.status(403).json({ error: 'Tu cuenta ha sido restringida administrativamente. Por favor, contacta a soporte.' });
+      }
       customer = await req.prisma.customer.update({
         where: { id: customer.id },
         data: {
           fullName: data.fullName,
+          idNumber: data.idNumber || customer.idNumber,
           totalReservations: { increment: 1 },
           lastReservationAt: new Date(),
           lastStatus: 'pending',
@@ -111,7 +162,8 @@ router.post('/', async (req, res) => {
         data: {
           restaurantId: restaurant.id,
           fullName: data.fullName,
-          phone: data.phone,
+          phone: normalizePhone(data.phone),
+          idNumber: data.idNumber || null,
           totalReservations: 1,
           lastReservationAt: new Date(),
           lastStatus: 'pending',
@@ -124,7 +176,7 @@ router.post('/', async (req, res) => {
         restaurantId: restaurant.id,
         customerId: customer.id,
         fullName: data.fullName,
-        phone: data.phone,
+        phone: normalizePhone(data.phone),
         reservationDate: data.reservationDate,
         reservationTime: data.reservationTime,
         partySize: parseInt(data.partySize),
@@ -229,10 +281,25 @@ router.patch('/:id/status', async (req, res) => {
     if (!existing) return res.status(404).json({ error: 'Reservation not found' });
 
     const statusDates = {};
-    if (status === 'confirmed') statusDates.confirmedAt = new Date();
-    if (status === 'cancelled') statusDates.cancelledAt = new Date();
-    if (status === 'completed') statusDates.completedAt = new Date();
-    if (status === 'no_show') statusDates.noShowAt = new Date();
+    if (status === 'confirmed') {
+      statusDates.confirmedAt = new Date();
+      statusDates.isPaid = true;
+      statusDates.paidAt = new Date();
+    } else if (status === 'cancelled') {
+      statusDates.cancelledAt = new Date();
+    } else if (status === 'completed') {
+      statusDates.completedAt = new Date();
+    } else if (status === 'no_show') {
+      statusDates.noShowAt = new Date();
+    } else if (status === 'pending') {
+      // Reverting to pending resets payment and dates
+      statusDates.isPaid = false;
+      statusDates.paidAt = null;
+      statusDates.confirmedAt = null;
+      statusDates.cancelledAt = null;
+      statusDates.completedAt = null;
+      statusDates.noShowAt = null;
+    }
 
     const reservation = await req.prisma.reservation.update({
       where: { id: req.params.id },
@@ -255,6 +322,52 @@ router.patch('/:id/status', async (req, res) => {
         action: 'status_change',
         actorRole: 'admin',
         metadataJson: JSON.stringify({ from: existing.status, to: status }),
+      },
+    });
+
+    res.json(reservation);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/reservations/:id/customer-action — Customer confirm/cancel
+router.patch('/:id/customer-action', async (req, res) => {
+  try {
+    const { action } = req.body; // 'confirm' or 'cancel'
+    const allowedActions = ['confirm', 'cancel'];
+    if (!allowedActions.includes(action)) {
+      return res.status(400).json({ error: 'Invalid action. Must be confirm or cancel.' });
+    }
+
+    const existing = await req.prisma.reservation.findUnique({ where: { id: req.params.id } });
+    if (!existing) return res.status(404).json({ error: 'Reservation not found' });
+    
+    // Only allow actions if status is pending (or confirmed if cancelling)
+    if (action === 'confirm' && existing.status !== 'pending') {
+      return res.status(400).json({ error: 'Reservation is already ' + existing.status });
+    }
+
+    const newStatus = action === 'confirm' ? 'confirmed' : 'cancelled';
+    const statusDates = {};
+    if (newStatus === 'confirmed') statusDates.confirmedAt = new Date();
+    if (newStatus === 'cancelled') statusDates.cancelledAt = new Date();
+
+    const reservation = await req.prisma.reservation.update({
+      where: { id: req.params.id },
+      data: { status: newStatus, ...statusDates },
+    });
+
+    // Audit log
+    await req.prisma.auditLog.create({
+      data: {
+        restaurantId: existing.restaurantId,
+        entityType: 'reservation',
+        entityId: reservation.id,
+        action: 'customer_' + action,
+        actorRole: 'customer',
+        actorName: existing.fullName,
+        metadataJson: JSON.stringify({ from: existing.status, to: newStatus }),
       },
     });
 
@@ -316,12 +429,19 @@ router.post('/:id/whatsapp', async (req, res) => {
       },
     });
 
+    const updateData = {
+      lastWhatsappAction: new Date(),
+      lastWhatsappMessageType: type || 'reminder',
+    };
+
     if (type === 'confirmation_request') {
-      await req.prisma.reservation.update({
-        where: { id: req.params.id },
-        data: { confirmationSentAt: new Date() },
-      });
+      updateData.confirmationSentAt = new Date();
     }
+
+    await req.prisma.reservation.update({
+      where: { id: req.params.id },
+      data: updateData,
+    });
 
     res.json(action);
   } catch (err) {

@@ -10,6 +10,7 @@ import {
   MessageSquare,
   Clock
 } from 'lucide-react';
+import { format12h } from '../utils/formatters';
 import { 
   BarChart, 
   Bar, 
@@ -27,7 +28,7 @@ import {
 
 const COLORS = ['#C9A96E', '#1e1e1e', '#3b82f6', '#f59e0b', '#ef4444'];
 
-export default function Dashboard() {
+export default function Dashboard({ onNavigateToReservation }) {
   const [data, setData] = useState(null);
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -118,7 +119,7 @@ export default function Dashboard() {
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={charts.peakHours}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" vertical={false} />
-                    <XAxis dataKey="time" stroke="#a0a0a0" fontSize={12} />
+                    <XAxis dataKey="time" stroke="#a0a0a0" fontSize={12} tickFormatter={(tick) => format12h(tick)} />
                     <YAxis stroke="#a0a0a0" fontSize={12} />
                     <Tooltip 
                       contentStyle={{ background: '#141414', border: '1px solid #2a2a2a', borderRadius: '8px' }}
@@ -212,7 +213,7 @@ export default function Dashboard() {
                   <button 
                     className="btn-icon" 
                     style={{ background: 'var(--bg-hover)', color: 'var(--primary)', cursor: 'pointer' }}
-                    onClick={() => console.log('Navigate to reservation:', alert.reservationId)}
+                    onClick={() => onNavigateToReservation(alert.reservationId)}
                     title="Ver Reservación"
                   >
                     <CalendarClock size={16} />

@@ -40,4 +40,32 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+router.put('/:id/status', async (req, res) => {
+  try {
+    const { isActive } = req.body;
+    const customer = await req.prisma.customer.update({
+      where: { id: req.params.id },
+      data: { isActive }
+    });
+    res.json(customer);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    // Delete associated reservations first (since it's SQLite without native cascading usually enabled by default easily)
+    await req.prisma.reservation.deleteMany({
+      where: { customerId: req.params.id }
+    });
+    const deleted = await req.prisma.customer.delete({
+      where: { id: req.params.id }
+    });
+    res.json(deleted);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;

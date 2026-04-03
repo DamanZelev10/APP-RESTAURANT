@@ -114,7 +114,38 @@
 }
 
 @media (max-width: 1024px) {
+  .dashboard {
+    padding: 24px 16px;
+  }
+
   .dashboard-content {
     grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .metric-value {
+    font-size: 22px;
+  }
+
+  .metric-icon {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+@media (max-width: 640px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .metric-card {
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
   }
 }

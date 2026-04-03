@@ -32,10 +32,21 @@ export const translations = {
     confirmDesc: 'Te recomendamos revisar los datos. ¿Solicitar reserva ahora?',
     confirmBtnEdit: 'Editar Datos',
     confirmBtnSubmit: 'Sí, Solicitar Ahora',
-    successPayment: 'Un asesor te contactará por WhatsApp para gestionar el pago de los $20,000 y confirmar tu mesa.',
+    successPayment: "Tu reserva ha sido registrada correctamente.\n\nPara confirmar tu mesa, es necesario realizar un abono de $20.000. Este valor será descontado del total de tu cuenta el día de tu visita.\n\nEn breve nos pondremos en contacto contigo para finalizar la confirmación.",
     loadingSlots: 'Cargando horarios disponibles',
     noSlots: 'No hay horarios disponibles para esta fecha',
-    paxFull: 'Lleno'
+    paxFull: 'Lleno',
+    labelGuestsValue: 'personas',
+    alertSelectTime: 'Por favor selecciona un horario',
+    paxCustom: '7+',
+    loginTitle: 'Acceso Administrativo',
+    loginSubtitle: 'Ingresa para gestionar las reservaciones.',
+    labelUser: 'Usuario',
+    labelPass: 'Contraseña',
+    btnLogin: 'Iniciar Sesión',
+    btnBack: 'Volver a la página principal',
+    errorLogin: 'Credenciales incorrectas. Intenta de nuevo.',
+    manageReservation: 'Gestionar mi Reserva'
   },
   en: {
     adminLogin: 'Admin Login',
@@ -70,10 +81,21 @@ export const translations = {
     confirmDesc: 'Please review your details. Request booking now?',
     confirmBtnEdit: 'Edit Details',
     confirmBtnSubmit: 'Yes, Request Now',
-    successPayment: 'An agent will contact you via WhatsApp to process the $20,000 payment and confirm your table.',
+    successPayment: "Your reservation has been successfully registered.\n\nTo confirm your table, a $20,000 deposit is required. This amount will be deducted from your total bill on the day of your visit.\n\nWe will contact you shortly to finalize the confirmation.",
     loadingSlots: 'Loading available times',
     noSlots: 'No available times for this date',
-    paxFull: 'Full'
+    paxFull: 'Full',
+    labelGuestsValue: 'guests',
+    alertSelectTime: 'Please select a time',
+    paxCustom: '7+',
+    loginTitle: 'Administrative Access',
+    loginSubtitle: 'Log in to manage reservations.',
+    labelUser: 'Username',
+    labelPass: 'Password',
+    btnLogin: 'Log In',
+    btnBack: 'Back to main page',
+    errorLogin: 'Incorrect credentials. Try again.',
+    manageReservation: 'Manage my Booking'
   }
 };
 
