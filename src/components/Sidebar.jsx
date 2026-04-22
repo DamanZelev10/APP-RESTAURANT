@@ -22,8 +22,7 @@ export default function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen }) 
     <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div className="sidebar-header">
         <div className="logo-box">
-          <h2 className="logo-text">ROSÉ<span>.</span></h2>
-          <p className="subtitle">CAFE BAR</p>
+          <img src="/Logo.png" alt="ROSÉ Logo" className="sidebar-logo-img" style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', marginBottom: '8px', border: '2px solid var(--primary)' }} />
         </div>
         <button className="close-sidebar-btn" onClick={() => setIsOpen(false)}>
           <X size={20} />

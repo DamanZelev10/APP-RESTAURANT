@@ -137,9 +137,7 @@ export default function LandingPage() {
       <div className="landing-content animate-fade-in">
         <header className="landing-header">
           <div className="landing-logo">
-            <img src="/Logo.png" alt="Rose Cafe Bar Logo" className="logo-img" />
-            <h1>ROSÉ<span>.</span></h1>
-            <p className="subtitle">CAFE BAR</p>
+            <img src="/Logo.png" alt="Rose Cafe Bar Logo" className="logo-img" style={{ height: '80px', width: '80px', borderRadius: '50%', objectFit: 'cover' }} />
           </div>
           <div className="landing-actions">
             <Link to="/mi-reserva" className="btn-manage-landing">

@@ -9,6 +9,14 @@ import LandingPage from './components/LandingPage';
 import Login from './components/Login';
 import CustomerPortal from './components/CustomerPortal';
 import PaymentSandbox from './components/PaymentSandbox';
+import PublicLayout from './components/PublicLayout';
+import HomePage from './pages/HomePage';
+import MenuPage from './pages/MenuPage';
+import ReservationsPage from './pages/ReservationsPage';
+import LocationPage from './pages/LocationPage';
+import ExperiencesPage from './pages/ExperiencesPage';
+import ContactPage from './pages/ContactPage';
+import './styles/index.css';
 import { Menu } from 'lucide-react';
 import { isAuthenticated } from './lib/api';
 import './App.css';
@@ -45,7 +53,9 @@ function AdminLayout() {
           <button className="hamburger-btn" onClick={() => setIsSidebarOpen(true)}>
             <Menu size={24} />
           </button>
-          <div className="mobile-logo">ROSÉ<span>.</span></div>
+          <div className="mobile-logo">
+            <img src="/Logo.png" alt="Logo" style={{ height: '35px', width: '35px', borderRadius: '50%', objectFit: 'cover' }} />
+          </div>
         </header>
         {activeTab === 'dashboard' && <Dashboard onNavigateToReservation={handleNavigateToReservation} />}
         {activeTab === 'reservations' && <Reservations selectedReservationId={selectedReservationId} clearSelectedReservation={() => setSelectedReservationId(null)} />}
@@ -59,7 +69,16 @@ function AdminLayout() {
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/menu" element={<MenuPage />} />
+        <Route path="/reservas" element={<ReservationsPage />} />
+        <Route path="/ubicacion" element={<LocationPage />} />
+        <Route path="/experiencias" element={<ExperiencesPage />} />
+        <Route path="/contacto" element={<ContactPage />} />
+      </Route>
+
+      <Route path="/reservar-mesa" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/mi-reserva" element={<CustomerPortal />} />
       <Route path="/cliente" element={<CustomerPortal />} />

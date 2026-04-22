@@ -27,7 +27,7 @@ export default function Login() {
     <div className="login-page">
       <div className="login-card animate-fade-in">
         <div className="login-header">
-          <img src="/Logo.png" alt="Rose Cafe Logo" className="login-logo" />
+          <img src="/Logo.png" alt="Rose Cafe Logo" className="login-logo" style={{ height: '80px', width: '80px', borderRadius: '50%', objectFit: 'cover', margin: '0 auto 16px' }} />
           <h2>{t('loginTitle')}</h2>
           <p>{t('loginSubtitle')}</p>
         </div>

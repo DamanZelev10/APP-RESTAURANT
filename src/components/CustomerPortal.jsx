@@ -115,7 +115,7 @@ export default function CustomerPortal() {
       <div className="portal-container animate-fade-in">
         <div className="portal-auth-card">
           <div className="portal-logo">
-            <h1>ROSÉ<span>.</span></h1>
+            <img src="/Logo.png" alt="ROSÉ Logo" style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', margin: '0 auto 16px' }} />
             <p>GESTIÓN DE RESERVAS</p>
           </div>
           
@@ -162,7 +162,9 @@ export default function CustomerPortal() {
           <div className="header-divider"></div>
           <h1 className="header-title">Mi Reserva</h1>
         </div>
-        <div className="portal-header-logo">ROSÉ<span>.</span></div>
+        <div className="portal-header-logo">
+          <img src="/Logo.png" alt="Logo" style={{ height: '35px', width: '35px', borderRadius: '50%', objectFit: 'cover' }} />
+        </div>
       </header>
 
       <main className="portal-content">
