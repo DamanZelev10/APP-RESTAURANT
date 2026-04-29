@@ -1,16 +1,46 @@
 :root {
-  --primary: #C9A96E;
-  --bg-dark: #0a0a0a;
-  --bg-card: #141414;
+  /* Brand Core - Dark Luxury */
+  --primary: #C9A96E; /* Antique Gold */
+  --primary-hover: #E3C588;
+  --burgundy: #4A1525; /* Deep Burgundy */
+  --burgundy-dark: #2A121A;
+  
+  /* Backgrounds */
+  --bg-dark: #080808; /* Obsidian / True Black */
+  --bg-card: #141414; /* Charcoal */
+  --bg-card-elevated: #1C1C1C;
   --bg-hover: #1e1e1e;
-  --text-main: #ffffff;
-  --text-muted: #a0a0a0;
-  --border: #2a2a2a;
+  --bg-glass: rgba(14, 14, 14, 0.85);
+  
+  /* Text */
+  --text-main: #EAEAEA; /* Pearl */
+  --text-muted: #8F8F8F; /* Ash */
+  --text-dark: #121212;
+  
+  /* UI Elements */
+  --border: #222222;
+  --border-gold: rgba(201, 169, 110, 0.15);
+  
+  /* States */
   --success: #10b981;
   --warning: #f59e0b;
   --danger: #ef4444;
   --info: #3b82f6;
+  
+  /* Layout & Spacing */
   --sidebar-w: 260px;
+  --header-height: 72px;
+  --safe-area-bottom: 85px; /* Critical for mobile bottom nav */
+  
+  /* Typography */
+  --font-editorial: 'Playfair Display', 'Merriweather', serif;
+  --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+  
+  /* Radii */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
 }
 
 * {
@@ -20,10 +50,26 @@
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-ui);
   background-color: var(--bg-dark);
   color: var(--text-main);
-  line-height: 1.5;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Elegant Typography Classes */
+.font-serif { font-family: var(--font-editorial); }
+.text-gold { color: var(--primary); }
+.text-pearl { color: var(--text-main); }
+.text-ash { color: var(--text-muted); }
+
+/* Global Typography Styles */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-editorial);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--text-main);
 }
 
 .app-container {
@@ -235,22 +281,45 @@ body {
 
 /* ─── Buttons ──────────────────────────────────────────── */
 .btn {
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: none;
-  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  transition: opacity 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
 }
 
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.btn-primary { background: var(--primary); color: #000; }
-.btn-outline { background: transparent; border: 1px solid var(--border); color: #fff; }
-.btn-icon { padding: 6px; border-radius: 6px; }
+.btn-primary { 
+  background: var(--primary); 
+  color: var(--text-dark);
+  box-shadow: 0 4px 14px rgba(201, 169, 110, 0.25);
+}
+.btn-primary:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(201, 169, 110, 0.35);
+}
+
+.btn-outline { 
+  background: rgba(201, 169, 110, 0.05); 
+  border: 1px solid var(--border-gold); 
+  color: var(--primary); 
+}
+.btn-outline:hover {
+  background: rgba(201, 169, 110, 0.1);
+  border-color: var(--primary);
+}
+
+.btn-icon { padding: 8px; border-radius: var(--radius-md); }
 
 /* ─── Forms ────────────────────────────────────────────── */
 .form-group { margin-bottom: 20px; }

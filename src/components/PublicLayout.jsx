@@ -43,29 +43,40 @@ export default function PublicLayout() {
         <Outlet />
       </main>
 
-      <footer className="site-footer">
-        <div className="container site-footer__grid">
-          <div>
-            <p className="site-footer__title">{siteConfig.brand}</p>
-            <p>{siteConfig.concept}</p>
+      <footer className="site-footer" style={{ background: 'var(--bg-card-elevated)', paddingTop: '5rem', paddingBottom: 'calc(var(--safe-area-bottom) + 2rem)' }}>
+        <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '3rem' }}>
+            <h2 className="font-serif text-gold" style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>{siteConfig.brand}</h2>
+            <p className="text-ash" style={{ maxWidth: '400px', fontSize: '1.1rem', marginBottom: '2rem' }}>{siteConfig.concept}</p>
+            <a href={`https://wa.me/${siteConfig.contact.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ padding: '0.8rem 2rem', borderRadius: 'var(--radius-full)', background: 'var(--primary)', color: 'var(--text-dark)', fontWeight: '600', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span>Atención vía WhatsApp</span>
+            </a>
           </div>
-          <div>
-            <p className="site-footer__title">Ubicación</p>
-            <p>{siteConfig.address}</p>
-            <p>{siteConfig.city}, {siteConfig.region}</p>
+
+          <div className="site-footer__grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem', textAlign: 'left' }}>
+            <div>
+              <p className="site-footer__title font-serif text-pearl" style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Ubicación</p>
+              <p className="text-ash" style={{ margin: '0 0 0.5rem 0' }}>{siteConfig.address}</p>
+              <p className="text-ash" style={{ margin: 0 }}>{siteConfig.city}, {siteConfig.region}</p>
+            </div>
+            <div>
+              <p className="site-footer__title font-serif text-pearl" style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Horario</p>
+              <p className="text-ash" style={{ margin: '0 0 0.5rem 0' }}>{siteConfig.hours.regularLabel}</p>
+              <p className="text-gold" style={{ margin: 0, fontSize: '0.9rem' }}>{siteConfig.hours.closedLabel}</p>
+            </div>
+            <div>
+              <p className="site-footer__title font-serif text-pearl" style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Contacto</p>
+              <p className="text-ash" style={{ margin: '0 0 0.5rem 0' }}><a href={`tel:${siteConfig.contact.phone}`} style={{ color: 'inherit', textDecoration: 'none' }}>{siteConfig.contact.phone}</a></p>
+              <p className="text-ash" style={{ margin: 0 }}><a href={`mailto:${siteConfig.contact.email}`} style={{ color: 'inherit', textDecoration: 'none' }}>{siteConfig.contact.email}</a></p>
+            </div>
           </div>
-          <div>
-            <p className="site-footer__title">Horario</p>
-            <p>{siteConfig.hours.regularLabel}</p>
-            <p>{siteConfig.hours.closedLabel}</p>
-          </div>
-          <div>
-            <p className="site-footer__title">Contacto</p>
-            <p><a href={`tel:${siteConfig.contact.phone}`}>{siteConfig.contact.phone}</a></p>
-            <p><a href={`mailto:${siteConfig.contact.email}`}>{siteConfig.contact.email}</a></p>
+          
+          <div style={{ textAlign: 'center', paddingTop: '2rem', borderTop: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+            &copy; {new Date().getFullYear()} {siteConfig.brand}. Todos los derechos reservados.
           </div>
         </div>
-      </footer >
+      </footer>
 
       <MobileQuickBar />
     </div >

@@ -3,8 +3,8 @@
    ========================================================================== */
 
 .menu-hero {
-  background: linear-gradient(135deg, rgba(42,31,29,0.92) 0%, rgba(110,44,61,0.85) 100%), url('/images/hero-pergola.png') center/cover no-repeat;
-  color: var(--rose-champagne);
+  background: linear-gradient(to bottom, rgba(8,8,8,0.5) 0%, rgba(8,8,8,0.95) 100%), url('/images/Menu.jpeg') center/cover no-repeat;
+  color: var(--text-pearl);
   padding-bottom: var(--space-8);
   min-height: 40vh;
   display: flex;
@@ -12,11 +12,12 @@
 }
 
 .menu-title {
-  color: var(--rose-cream);
+  color: var(--text-pearl);
+  font-family: var(--font-editorial);
   font-size: clamp(3rem, 8vw, 5.5rem);
   letter-spacing: -0.02em;
   margin-bottom: var(--space-4);
-  text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  text-shadow: 0 4px 20px rgba(0,0,0,0.6);
 }
 
 /* --- Sticky Navigation --- */
@@ -24,16 +25,17 @@
   position: sticky;
   top: var(--header-height);
   z-index: 15;
-  background: rgba(253, 251, 247, 0.95);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--rose-border);
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
   transition: box-shadow 0.3s ease;
   overflow-x: auto;
   scrollbar-width: none; /* Firefox */
 }
 .menu-sticky-nav::-webkit-scrollbar { display: none; } /* Chrome */
 .menu-sticky-nav.nav-shadow {
-  box-shadow: 0 4px 12px rgba(42, 31, 29, 0.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 .menu-nav-list {
   display: flex;
@@ -45,12 +47,12 @@
 .menu-nav-link {
   display: inline-block;
   padding: 0.5rem 1.25rem;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--rose-espresso);
+  color: var(--text-muted);
   background: transparent;
   cursor: pointer;
   white-space: nowrap;
@@ -58,18 +60,20 @@
   border: 1px solid transparent;
 }
 .menu-nav-link:hover {
-  background: rgba(110, 44, 61, 0.05);
+  color: var(--text-pearl);
+  background: rgba(201, 169, 110, 0.05);
 }
 .menu-nav-link--active {
-  background: var(--rose-burgundy);
-  color: var(--rose-white);
-  box-shadow: 0 4px 12px rgba(110, 44, 61, 0.2);
+  background: var(--primary);
+  color: var(--text-dark);
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(201, 169, 110, 0.2);
 }
 
 /* --- Menu Structure --- */
 .menu-wrapper {
   padding: var(--space-12) 0;
-  background-color: var(--rose-cream);
+  background-color: var(--bg-dark);
 }
 .menu-category {
   margin-bottom: var(--space-16);
@@ -79,16 +83,17 @@
   margin-bottom: var(--space-10);
 }
 .menu-category-header h2 {
+  font-family: var(--font-editorial);
   font-size: clamp(2.5rem, 5vw, 3.5rem);
-  color: var(--rose-burgundy);
+  color: var(--primary);
   margin-bottom: var(--space-4);
   position: relative;
   display: inline-block;
 }
 .floral-divider {
   width: 60px;
-  height: 2px;
-  background: var(--rose-powder);
+  height: 1px;
+  background: var(--border-gold);
   margin: 0 auto;
   position: relative;
 }
@@ -98,8 +103,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: var(--rose-burgundy);
-  background: var(--rose-cream);
+  color: var(--primary);
+  background: var(--bg-dark);
   padding: 0 10px;
   font-size: 1.2rem;
 }
@@ -110,17 +115,18 @@
 }
 .menu-subsection-header {
   margin-bottom: var(--space-6);
-  border-bottom: 1px solid var(--rose-border);
+  border-bottom: 1px solid var(--border);
   padding-bottom: var(--space-3);
 }
 .menu-subsection-header h3 {
+  font-family: var(--font-editorial);
   font-size: clamp(1.5rem, 3vw, 2rem);
-  color: var(--rose-espresso);
+  color: var(--text-pearl);
   margin-bottom: var(--space-2);
 }
 .menu-note {
   font-size: 0.9rem;
-  color: rgba(42, 31, 29, 0.6);
+  color: var(--text-muted);
   font-style: italic;
   margin: 0;
 }
@@ -145,11 +151,11 @@
   padding-bottom: var(--space-4);
 }
 .menu-item--featured {
-  background: rgba(253, 251, 247, 0.5);
+  background: var(--bg-card);
   padding: var(--space-4);
   border-radius: var(--radius-md);
-  border: 1px solid var(--rose-powder);
-  box-shadow: 0 4px 20px rgba(110, 44, 61, 0.04);
+  border: 1px solid var(--border-gold);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 .menu-item-header {
   display: flex;
@@ -159,8 +165,8 @@
 .menu-item-name {
   font-family: var(--font-ui);
   font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--rose-espresso);
+  font-weight: 500;
+  color: var(--text-pearl);
   margin: 0;
   display: flex;
   align-items: center;
@@ -169,21 +175,21 @@
 }
 .menu-item-dotleader {
   flex-grow: 1;
-  border-bottom: 1px dotted rgba(42, 31, 29, 0.2);
+  border-bottom: 1px dotted var(--border);
   margin: 0 var(--space-3);
   position: relative;
   top: -6px;
 }
 .menu-item-price {
   font-family: var(--font-editorial);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 1.15rem;
-  color: var(--rose-burgundy);
+  color: var(--primary);
   white-space: nowrap;
 }
 .menu-item-desc {
   font-size: 0.9rem;
-  color: rgba(42, 31, 29, 0.7);
+  color: var(--text-muted);
   margin: 0;
   line-height: 1.4;
   max-width: 90%;
@@ -196,17 +202,17 @@
   letter-spacing: 0.05em;
   padding: 2px 8px;
   border-radius: 4px;
-  font-weight: 700;
+  font-weight: 600;
 }
-.badge-premium { background: var(--rose-espresso); color: var(--rose-champagne); }
-.badge-infantil { background: var(--rose-powder); color: var(--rose-espresso); }
+.badge-premium { background: var(--primary); color: var(--text-dark); }
+.badge-infantil { background: var(--bg-card-elevated); color: var(--text-pearl); border: 1px solid var(--border); }
 
 /* --- Footer CTA --- */
 .menu-footer-cta {
-  background: radial-gradient(circle at center, rgba(110,44,61,0.05), transparent 70%);
+  background: radial-gradient(circle at center, rgba(201,169,110,0.08), transparent 70%);
   padding: var(--space-12) var(--space-4);
   text-align: center;
-  border-top: 1px solid var(--rose-border);
+  border-top: 1px solid var(--border);
   margin-top: var(--space-12);
   border-radius: var(--radius-lg);
 }

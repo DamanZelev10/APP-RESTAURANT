@@ -18,21 +18,43 @@ export default function ExperiencesPage() {
         </div>
       </section>
       <section className="section">
-        <div className="container gallery-grid">
-          <div className="gallery-tile" style={{ padding: 0, overflow: 'hidden' }}>
-            <img src="/images/neon-wings-stage.png" alt="Stage Neon Wings" style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+        <div className="container gallery-grid" style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
+          gap: '1.5rem' 
+        }}>
+          <div className="gallery-tile" style={{ padding: 0, overflow: 'hidden', borderRadius: 'var(--radius-md)', height: '400px', position: 'relative' }}>
+            <video autoPlay muted loop playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }}>
+              <source src="/images/VIDEO PLAZA ROSE ENTRADA.mp4" type="video/mp4" />
+            </video>
+            <div style={{ position: 'absolute', bottom: '1rem', left: '1rem', color: 'white', zIndex: 1, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>Plaza ROSÉ</div>
           </div>
-          <div className="gallery-tile" style={{ padding: 0, overflow: 'hidden' }}>
-            <img src="/images/ice-cream-station.png" alt="Helados" style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+          
+          <div className="gallery-tile" style={{ padding: 0, overflow: 'hidden', borderRadius: 'var(--radius-md)', height: '400px', position: 'relative' }}>
+            <video autoPlay muted loop playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }}>
+              <source src="/images/VIDEO MESAS PARA HERO.mp4" type="video/mp4" />
+            </video>
+            <div style={{ position: 'absolute', bottom: '1rem', left: '1rem', color: 'white', zIndex: 1, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>Atmósfera Interior</div>
           </div>
-          <div className="gallery-tile" style={{ padding: 0, overflow: 'hidden' }}>
-            <img src="/images/patio-signpost.png" alt="Patio Directional Sign" style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+
+          <div className="gallery-tile" style={{ padding: 0, overflow: 'hidden', borderRadius: 'var(--radius-md)', height: '400px' }}>
+            <img src="/images/PATIO ROSE.png" alt="Patio" style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
           </div>
-          <div className="gallery-tile" style={{ padding: 0, overflow: 'hidden' }}>
-            <img src="/images/outdoor-swing.png" alt="Swing Chair" style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+          
+          <div className="gallery-tile" style={{ padding: 0, overflow: 'hidden', borderRadius: 'var(--radius-md)', height: '400px' }}>
+            <img src="/images/BAR PRINCIPAL ENTRADA.png" alt="Bar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
           </div>
-          <div className="gallery-tile" style={{ padding: 0, overflow: 'hidden' }}>
-            <img src="/images/hero-pergola.png" alt="Pergola" style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+
+          <div className="gallery-tile" style={{ padding: 0, overflow: 'hidden', borderRadius: 'var(--radius-md)', height: '400px' }}>
+            <img src="/images/ZONA DE HELADOS.png" alt="Helados" style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+          </div>
+
+          <div className="gallery-tile" style={{ padding: 0, overflow: 'hidden', borderRadius: 'var(--radius-md)', height: '400px' }}>
+            <img src="/images/ZONA DE CANTO.png" alt="Canto" style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+          </div>
+
+          <div className="gallery-tile" style={{ padding: 0, overflow: 'hidden', borderRadius: 'var(--radius-md)', height: '400px', gridColumn: '1 / -1' }}>
+            <img src="/images/FACHADA PRINCIPAL.png" alt="Fachada" style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
           </div>
         </div>
       </section>

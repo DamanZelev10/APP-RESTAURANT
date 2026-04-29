@@ -11,11 +11,20 @@ export default function LocationPage() {
         canonical={`${siteConfig.contact.siteUrl}/ubicacion`}
         jsonLd={buildRestaurantSchema(`${siteConfig.contact.siteUrl}/ubicacion`)}
       />
-      <section className="section page-hero">
-        <div className="container narrow">
-          <p className="eyebrow">Ubicación</p>
-          <h1>Cómo llegar a ROSÉ</h1>
-          <p className="lead">Dirección clara, horario completo y accesos rápidos para usuarios locales.</p>
+      <section className="section page-hero" style={{ 
+        position: 'relative', 
+        minHeight: '40vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        backgroundImage: `linear-gradient(to bottom, rgba(11,11,11,0.5), rgba(11,11,11,0.9)), url('/images/FACHADA PRINCIPAL.png')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        color: 'white'
+      }}>
+        <div className="container narrow" style={{ position: 'relative', zIndex: 2 }}>
+          <p className="eyebrow" style={{ color: 'var(--primary)' }}>Ubicación</p>
+          <h1 style={{ color: 'white' }}>Cómo llegar a ROSÉ</h1>
+          <p className="lead" style={{ color: 'rgba(255,255,255,0.8)' }}>Dirección clara, horario completo y accesos rápidos para usuarios locales.</p>
         </div>
       </section>
       <section className="section">
