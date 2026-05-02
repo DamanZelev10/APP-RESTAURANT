@@ -15,7 +15,7 @@ export function generateWhatsAppMessage(type, reservation, portalToken = null) {
   const template = TEMPLATES[type];
   if (!template) return null;
 
-  const domain = process.env.CORS_ORIGIN || 'http://localhost:5173';
+  const domain = process.env.CORS_ORIGIN || 'http://localhost:3001';
   const portalUrl = portalToken ? `${domain}/mi-reserva/${portalToken}` : null;
 
   return template({

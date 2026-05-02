@@ -88,9 +88,9 @@ Para abrir links desde el celular y probar el flujo real:
    npm run dev -- --host 0.0.0.0
    \`\`\`
 
-2. Ejecutar ngrok apuntando al puerto de Vite (5173):
+2. Ejecutar ngrok apuntando al puerto del servidor unificado (3001):
    \`\`\`bash
-   ngrok http 5173
+   ngrok http 3001
    \`\`\`
 
 3. Copiar URL HTTPS de ngrok (ej. `https://xxxx.ngrok-free.app`).

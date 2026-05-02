@@ -311,7 +311,7 @@ router.post('/request-access', async (req, res) => {
 
       const generatedTokens = [];
       const reservationsWithLinks = [];
-      const clientOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+      const clientOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:3001';
 
       for (const resv of activeReservations) {
         const { token, tokenHash } = generatePortalToken();
