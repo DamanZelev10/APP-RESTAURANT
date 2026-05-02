@@ -3,7 +3,7 @@
  * Handles all communication with the Express/Prisma backend
  */
 
-const API_BASE = '/api';
+const API_BASE = import.meta.env?.VITE_API_URL || '/api';
 
 async function request(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint}`;
@@ -54,8 +54,9 @@ export const api = {
   sendWhatsApp: (id, type) => request(`/reservations/${id}/whatsapp`, { method: 'POST', body: JSON.stringify({ type }) }),
   
   // ─── Customer Portal ───────────────────────────────────
-  searchCustomerReservations: (phone) => request(`/reservations/customer-search?phone=${encodeURIComponent(phone)}`),
-  customerAction: (id, action) => request(`/reservations/${id}/customer-action`, { method: 'PATCH', body: JSON.stringify({ action }) }),
+  getPortalReservation: (token) => request(`/reservations/portal/${token}`),
+  portalAction: (token, action) => request(`/reservations/portal/${token}/action`, { method: 'PATCH', body: JSON.stringify({ action }) }),
+  requestPortalAccess: (phone) => request('/reservations/request-access', { method: 'POST', body: JSON.stringify({ phone }) }),
 
   // ─── Dashboard ─────────────────────────────────────────
   getDashboardMetrics: () => request('/dashboard'),

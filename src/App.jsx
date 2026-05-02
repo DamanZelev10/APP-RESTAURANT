@@ -99,11 +99,12 @@ function App() {
         <Route path="/ubicacion" element={<LocationPage />} />
         <Route path="/experiencias" element={<ExperiencesPage />} />
         <Route path="/contacto" element={<ContactPage />} />
+        <Route path="/mi-reserva/:token" element={<CustomerPortal />} />
+        <Route path="/mi-reserva" element={<CustomerPortal />} />
       </Route>
 
       <Route path="/reservar-mesa" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/mi-reserva" element={<CustomerPortal />} />
       <Route path="/cliente" element={<CustomerPortal />} />
       <Route path="/payment-sandbox" element={<PaymentSandbox />} />
       <Route 

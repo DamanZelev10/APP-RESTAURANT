@@ -53,5 +53,64 @@ Plataforma integral para ROSÉ Gastro Bar. Incluye sitio público premium, motor
 
 ## 🛠 Próximos Parches (Roadmap)
 - Integración de pasarela de pagos reales (remplazo de Sandbox).
-- Envío automático y notificaciones reales de WhatsApp.
-- Endurecimiento de la seguridad en el portal del cliente (autenticación vía OTP o link seguro en lugar de búsqueda abierta por teléfono).
+- Envío automático y notificaciones reales de WhatsApp en producción.
+
+---
+
+## Patch 03A — WhatsApp Cloud API en modo test
+
+### Objetivo
+
+Permite enviar links únicos del portal cliente por WhatsApp usando Cloud API en entorno local.
+
+### Variables (`server/.env`)
+
+\`\`\`env
+WHATSAPP_PROVIDER=cloud_api
+WHATSAPP_SEND_ENABLED=true
+WHATSAPP_SEND_MODE=test
+WHATSAPP_API_VERSION=v25.0
+WHATSAPP_PHONE_NUMBER_ID=
+WHATSAPP_BUSINESS_ACCOUNT_ID=
+WHATSAPP_ACCESS_TOKEN=
+WHATSAPP_DEV_RECIPIENT_PHONE=
+CLIENT_ORIGIN=
+\`\`\`
+
+> **Nota:** En `WHATSAPP_SEND_MODE=test`, todos los mensajes se fuerzan a `WHATSAPP_DEV_RECIPIENT_PHONE`.
+
+### ngrok (Pruebas en Celular)
+
+Para abrir links desde el celular y probar el flujo real:
+
+1. Ejecutar frontend abriendo el host:
+   \`\`\`bash
+   npm run dev -- --host 0.0.0.0
+   \`\`\`
+
+2. Ejecutar ngrok apuntando al puerto de Vite (5173):
+   \`\`\`bash
+   ngrok http 5173
+   \`\`\`
+
+3. Copiar URL HTTPS de ngrok (ej. `https://xxxx.ngrok-free.app`).
+
+4. Configurar en `server/.env`:
+   \`\`\`env
+   CLIENT_ORIGIN=https://xxxx.ngrok-free.app
+   \`\`\`
+
+5. Configurar frontend (en `.env.local` de la raíz):
+   \`\`\`env
+   VITE_API_URL=/api
+   \`\`\`
+
+6. Asegurar proxy `/api` en `vite.config.js` apuntando hacia `http://localhost:3001` (ya configurado por defecto).
+
+### Seguridad
+
+- No subir `server/.env`.
+- No exponer `WHATSAPP_ACCESS_TOKEN`.
+- No guardar tokens crudos del portal en logs (están sanitizados).
+- No usar producción hasta tener templates aprobados y número real.
+- El modo test fuerza todos los mensajes al número de desarrollo.

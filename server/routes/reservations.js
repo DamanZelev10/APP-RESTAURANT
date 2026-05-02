@@ -3,6 +3,8 @@ import { validateReservation, getAvailableSlots, getDefaultRestaurant, getDayCap
 import { getWhatsAppAction } from '../utils/whatsapp.js';
 import { normalizePhone } from '../utils/phone.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { generatePortalToken, hashPortalToken } from '../utils/token.js';
+import { sendReservationAccessLinks } from '../services/notifications/notificationService.js';
 
 const router = Router();
 
@@ -77,42 +79,6 @@ router.get('/capacity', async (req, res) => {
   }
 });
 
-// GET /api/reservations/customer-search — Search reservations for a customer (PUBLIC/PORTAL)
-// TODO (Security): Proteger este endpoint en el próximo parche para evitar enumeración.
-router.get('/customer-search', async (req, res) => {
-  try {
-    const { phone } = req.query;
-    if (!phone) return res.status(400).json({ error: 'Phone is required' });
-
-    const normalizedPhone = normalizePhone(phone);
-    const restaurant = await getDefaultRestaurant(req.prisma);
-    if (!restaurant) return res.status(404).json({ error: 'No restaurant found' });
-
-    const reservations = await req.prisma.reservation.findMany({
-      where: {
-        restaurantId: restaurant.id,
-        phone: normalizedPhone,
-        status: { in: ['pending', 'confirmed', 'completed'] }
-      },
-      orderBy: [{ reservationDate: 'asc' }, { reservationTime: 'asc' }],
-    });
-
-    const now = new Date();
-    const filtered = reservations.filter(res => {
-      if (res.status === 'completed') {
-        const resDateTime = new Date(`${res.reservationDate}T${res.reservationTime}:00-05:00`);
-        const expiryTime = new Date(resDateTime.getTime() + 60 * 60 * 1000);
-        return expiryTime > now;
-      }
-      return true;
-    });
-
-    res.json(filtered);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // GET /api/reservations/:id (ADMIN ONLY)
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
@@ -139,6 +105,10 @@ router.post('/', async (req, res) => {
     if (errors.length > 0) return res.status(400).json({ errors });
 
     const normalizedPhone = normalizePhone(data.phone);
+
+    const { token, tokenHash } = generatePortalToken();
+    const expiresAt = new Date();
+    expiresAt.setMonth(expiresAt.getMonth() + 1);
 
     // Transaction
     const reservation = await req.prisma.$transaction(async (tx) => {
@@ -192,6 +162,14 @@ router.post('/', async (req, res) => {
         },
       });
 
+      await tx.customerPortalToken.create({
+        data: {
+          reservationId: resv.id,
+          tokenHash,
+          expiresAt
+        }
+      });
+
       await tx.auditLog.create({
         data: {
           restaurantId: restaurant.id,
@@ -217,7 +195,7 @@ router.post('/', async (req, res) => {
             channel: 'whatsapp',
             status: 'pending',
             scheduledFor: reminderTime,
-            payloadJson: JSON.stringify(getWhatsAppAction('confirmation_request', resv)),
+            payloadJson: JSON.stringify(getWhatsAppAction('confirmation_request', resv, token)),
           },
         });
       }
@@ -225,11 +203,166 @@ router.post('/', async (req, res) => {
       return resv;
     });
 
-    res.status(201).json(reservation);
+    const response = { ...reservation };
+    // Always return token to the frontend that creates it, to show the success page link if needed.
+    // In dev mode, or simply because the person making the booking has the right to see their link instantly.
+    response.portalToken = token;
+
+    res.status(201).json(response);
   } catch (err) {
     if (err.message.includes('cuenta ha sido restringida')) {
       return res.status(403).json({ error: err.message });
     }
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/reservations/portal/:token — Secure portal access
+router.get('/portal/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+    const tokenHash = hashPortalToken(token);
+    
+    const portalToken = await req.prisma.customerPortalToken.findUnique({
+      where: { tokenHash },
+      include: { reservation: { include: { restaurant: { include: { settings: true } } } } }
+    });
+
+    if (!portalToken) return res.status(404).json({ error: 'Link inválido o expirado' });
+    if (new Date() > portalToken.expiresAt) return res.status(403).json({ error: 'Este link ha expirado' });
+
+    res.json(portalToken.reservation);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/reservations/portal/:token/action — Secure customer action
+router.patch('/portal/:token/action', async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { action } = req.body;
+    
+    const allowedActions = ['confirm', 'cancel'];
+    if (!allowedActions.includes(action)) {
+      return res.status(400).json({ error: 'Invalid action. Must be confirm or cancel.' });
+    }
+
+    const tokenHash = hashPortalToken(token);
+    const portalToken = await req.prisma.customerPortalToken.findUnique({
+      where: { tokenHash },
+      include: { reservation: true }
+    });
+
+    if (!portalToken) return res.status(404).json({ error: 'Link inválido o expirado' });
+    if (new Date() > portalToken.expiresAt) return res.status(403).json({ error: 'Este link ha expirado' });
+
+    const existing = portalToken.reservation;
+    if (action === 'confirm' && existing.status !== 'pending') {
+      return res.status(400).json({ error: 'Reservation is already ' + existing.status });
+    }
+
+    const newStatus = action === 'confirm' ? 'confirmed' : 'cancelled';
+    const statusDates = {};
+    if (newStatus === 'confirmed') statusDates.confirmedAt = new Date();
+    if (newStatus === 'cancelled') statusDates.cancelledAt = new Date();
+
+    const reservation = await req.prisma.reservation.update({
+      where: { id: existing.id },
+      data: { status: newStatus, ...statusDates },
+    });
+
+    await req.prisma.auditLog.create({
+      data: {
+        restaurantId: existing.restaurantId,
+        entityType: 'reservation',
+        entityId: reservation.id,
+        action: 'customer_' + action,
+        actorRole: 'customer',
+        actorName: existing.fullName,
+        metadataJson: JSON.stringify({ from: existing.status, to: newStatus }),
+      },
+    });
+
+    res.json(reservation);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/reservations/request-access — Generic response for portal links
+router.post('/request-access', async (req, res) => {
+  try {
+    const { phone } = req.body;
+    if (!phone) return res.status(400).json({ error: 'Phone is required' });
+
+    const normalizedPhone = normalizePhone(phone);
+    const restaurant = await getDefaultRestaurant(req.prisma);
+    
+    if (restaurant) {
+      // Find active reservations
+      const activeReservations = await req.prisma.reservation.findMany({
+        where: {
+          restaurantId: restaurant.id,
+          phone: normalizedPhone,
+          status: { in: ['pending', 'confirmed'] }
+        }
+      });
+
+      const generatedTokens = [];
+      const reservationsWithLinks = [];
+      const clientOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+
+      for (const resv of activeReservations) {
+        const { token, tokenHash } = generatePortalToken();
+        const expiresAt = new Date();
+        expiresAt.setMonth(expiresAt.getMonth() + 1);
+
+        // Delete existing tokens if any
+        await req.prisma.customerPortalToken.deleteMany({
+          where: { reservationId: resv.id }
+        });
+
+        await req.prisma.customerPortalToken.create({
+          data: {
+            reservationId: resv.id,
+            tokenHash,
+            expiresAt
+          }
+        });
+
+        if (process.env.PORTAL_TOKEN_DEV_RETURN === 'true') {
+          generatedTokens.push({ reservationId: resv.id, token });
+        }
+
+        reservationsWithLinks.push({
+          reservation: resv,
+          portalUrl: `${clientOrigin}/mi-reserva?token=${token}`,
+          expiresAt
+        });
+      }
+
+      if (reservationsWithLinks.length > 0) {
+        // Enviar WhatsApp en background, sin esperar o bloquear respuesta
+        sendReservationAccessLinks({
+          prisma: req.prisma,
+          restaurantId: restaurant.id,
+          reservationsWithLinks,
+          requestedPhone: normalizedPhone
+        }).catch(err => console.error('[Request Access] Error in notification service:', err));
+      }
+
+      if (process.env.PORTAL_TOKEN_DEV_RETURN === 'true') {
+        return res.json({ 
+          message: 'Tokens generados (DEV MODE)', 
+          tokens: generatedTokens 
+        });
+      }
+    }
+
+    // Always return generic success in production
+    res.json({ message: 'Si tienes reservas activas con este número, te enviaremos los links de acceso por WhatsApp en breve.' });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
@@ -296,7 +429,6 @@ router.patch('/:id/status', authenticateToken, async (req, res) => {
     const statusDates = {};
     if (status === 'confirmed') {
       statusDates.confirmedAt = new Date();
-      // REMOVED isPaid = true and paidAt = new Date() logic here
     } else if (status === 'cancelled') {
       statusDates.cancelledAt = new Date();
     } else if (status === 'completed') {
@@ -330,54 +462,6 @@ router.patch('/:id/status', authenticateToken, async (req, res) => {
         action: 'status_change',
         actorRole: 'admin',
         metadataJson: JSON.stringify({ from: existing.status, to: status }),
-      },
-    });
-
-    res.json(reservation);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// PATCH /api/reservations/:id/customer-action — Customer confirm/cancel (PUBLIC/PORTAL)
-// TODO (Security): Proteger este endpoint en el próximo parche para evitar abuso.
-router.patch('/:id/customer-action', async (req, res) => {
-  try {
-    const { action } = req.body; 
-    const allowedActions = ['confirm', 'cancel'];
-    if (!allowedActions.includes(action)) {
-      return res.status(400).json({ error: 'Invalid action. Must be confirm or cancel.' });
-    }
-
-    const restaurant = await getDefaultRestaurant(req.prisma);
-    const existing = await req.prisma.reservation.findFirst({ 
-      where: { id: req.params.id, restaurantId: restaurant.id } 
-    });
-    if (!existing) return res.status(404).json({ error: 'Reservation not found' });
-    
-    if (action === 'confirm' && existing.status !== 'pending') {
-      return res.status(400).json({ error: 'Reservation is already ' + existing.status });
-    }
-
-    const newStatus = action === 'confirm' ? 'confirmed' : 'cancelled';
-    const statusDates = {};
-    if (newStatus === 'confirmed') statusDates.confirmedAt = new Date();
-    if (newStatus === 'cancelled') statusDates.cancelledAt = new Date();
-
-    const reservation = await req.prisma.reservation.update({
-      where: { id: existing.id },
-      data: { status: newStatus, ...statusDates },
-    });
-
-    await req.prisma.auditLog.create({
-      data: {
-        restaurantId: existing.restaurantId,
-        entityType: 'reservation',
-        entityId: reservation.id,
-        action: 'customer_' + action,
-        actorRole: 'customer',
-        actorName: existing.fullName,
-        metadataJson: JSON.stringify({ from: existing.status, to: newStatus }),
       },
     });
 
@@ -430,7 +514,20 @@ router.post('/:id/whatsapp', authenticateToken, async (req, res) => {
     });
     if (!reservation) return res.status(404).json({ error: 'Reservation not found' });
 
-    const action = getWhatsAppAction(type || 'reminder', reservation);
+    const { token, tokenHash } = generatePortalToken();
+    const expiresAt = new Date();
+    expiresAt.setMonth(expiresAt.getMonth() + 1);
+
+    await req.prisma.customerPortalToken.deleteMany({ where: { reservationId: reservation.id } });
+    await req.prisma.customerPortalToken.create({
+      data: {
+        reservationId: reservation.id,
+        tokenHash,
+        expiresAt
+      }
+    });
+
+    const action = getWhatsAppAction(type || 'reminder', reservation, token);
     if (!action) return res.status(400).json({ error: 'Invalid message type' });
 
     await req.prisma.notificationLog.create({

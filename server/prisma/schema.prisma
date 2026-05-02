@@ -124,6 +124,7 @@ model Reservation {
   customer         Customer?         @relation(fields: [customerId], references: [id])
   notificationLogs NotificationLog[]
   payments         Payment[]
+  customerPortalToken CustomerPortalToken?
 
   @@map("reservations")
 }
@@ -182,4 +183,17 @@ model AuditLog {
   restaurant Restaurant @relation(fields: [restaurantId], references: [id])
 
   @@map("audit_logs")
+}
+
+// ─── Customer Portal Token ──────────────────────────────
+model CustomerPortalToken {
+  id            String   @id @default(uuid())
+  reservationId String   @unique @map("reservation_id")
+  tokenHash     String   @unique @map("token_hash") // SHA-256 hash of the plain token
+  expiresAt     DateTime @map("expires_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  @@map("customer_portal_tokens")
 }
