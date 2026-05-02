@@ -7,15 +7,31 @@ const API_BASE = '/api';
 
 async function request(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint}`;
+  
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+
+  const token = localStorage.getItem('restaurant_auth_token');
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const response = await fetch(url, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
+    headers,
   });
 
   if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem('restaurant_auth_token');
+      localStorage.removeItem('restaurant_user');
+      // If we are not already on the login page or public routes, redirect
+      if (window.location.pathname.startsWith('/admin')) {
+        window.location.href = '/'; 
+      }
+    }
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.error || errorData.errors?.join(', ') || 'API Request failed');
   }
@@ -70,21 +86,33 @@ export const api = {
   simulateWebhook: (provider, payload) => request(`/payments/webhook/${provider}`, { method: 'POST', body: JSON.stringify(payload) }),
 };
 
-// ─── AUTH LOGIC (Simple placeholder) ───────────────────
+// ─── AUTH LOGIC ───────────────────
 const AUTH_KEY = 'restaurant_auth_token';
+const USER_KEY = 'restaurant_user';
 
 export const loginAdmin = async (username, password) => {
-  if (username === 'admin' && password === 'admin') {
-    localStorage.setItem(AUTH_KEY, 'authenticated');
+  try {
+    const res = await request('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password })
+    });
+    localStorage.setItem(AUTH_KEY, res.token);
+    localStorage.setItem(USER_KEY, JSON.stringify(res.user));
     return true;
+  } catch (error) {
+    throw error;
   }
-  return false;
+};
+
+export const getMe = async () => {
+  return request('/auth/me');
 };
 
 export const logoutAdmin = () => {
   localStorage.removeItem(AUTH_KEY);
+  localStorage.removeItem(USER_KEY);
 };
 
 export const isAuthenticated = () => {
-  return localStorage.getItem(AUTH_KEY) === 'authenticated';
+  return !!localStorage.getItem(AUTH_KEY);
 };

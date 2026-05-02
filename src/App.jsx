@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -18,13 +18,36 @@ import ExperiencesPage from './pages/ExperiencesPage';
 import ContactPage from './pages/ContactPage';
 import './styles/index.css';
 import { Menu } from 'lucide-react';
-import { isAuthenticated } from './lib/api';
+import { isAuthenticated, getMe } from './lib/api';
 import './App.css';
 
 const ProtectedRoute = ({ children }) => {
-  if (!isAuthenticated()) {
+  const [isAuth, setIsAuth] = useState(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (!isAuthenticated()) {
+        setIsAuth(false);
+        return;
+      }
+      try {
+        await getMe();
+        setIsAuth(true);
+      } catch (err) {
+        setIsAuth(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  if (isAuth === null) {
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#1a1a1a', color: '#c9a96e' }}>Verificando sesión...</div>;
+  }
+
+  if (!isAuth) {
     return <Navigate to="/login" replace />;
   }
+
   return children;
 };
 

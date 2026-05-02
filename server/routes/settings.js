@@ -92,9 +92,15 @@ router.get('/business-hours', async (req, res) => {
 
 router.put('/business-hours/:id', async (req, res) => {
   try {
+    const restaurant = await getDefaultRestaurant(req.prisma);
+    const existing = await req.prisma.businessHours.findFirst({
+      where: { id: req.params.id, restaurantId: restaurant.id }
+    });
+    if (!existing) return res.status(404).json({ error: 'Business hour not found' });
+
     const { isOpen, openTime, closeTime } = req.body;
     const updated = await req.prisma.businessHours.update({
-      where: { id: req.params.id },
+      where: { id: existing.id },
       data: { isOpen, openTime, closeTime }
     });
     res.json(updated);

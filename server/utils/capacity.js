@@ -7,7 +7,6 @@ const DEFAULT_BUSINESS_HOURS = {
   close: '22:00' // 10:00 PM
 };
 
-// Get the first restaurant (single-tenant MVP)
 export async function getDefaultRestaurant(prisma) {
   return prisma.restaurant.findFirst({
     where: { isActive: true },
@@ -15,7 +14,6 @@ export async function getDefaultRestaurant(prisma) {
   });
 }
 
-// Calculate used capacity for a specific date and time slot
 export async function getSlotCapacity(prisma, restaurantId, date, time) {
   const result = await prisma.reservation.aggregate({
     where: {
@@ -29,7 +27,6 @@ export async function getSlotCapacity(prisma, restaurantId, date, time) {
   return result._sum.partySize || 0;
 }
 
-// Get all used capacity for a given date grouped by time
 export async function getDayCapacity(prisma, restaurantId, date) {
   const reservations = await prisma.reservation.findMany({
     where: {
@@ -47,7 +44,37 @@ export async function getDayCapacity(prisma, restaurantId, date) {
   return slotMap;
 }
 
-// Generate available time slots for a given date
+export async function getBusinessWindow(prisma, restaurantId, date) {
+  const restaurant = await prisma.restaurant.findUnique({
+    where: { id: restaurantId },
+    include: { settings: true }
+  });
+  
+  if (!restaurant) return { isOpen: false, openTime: null, closeTime: null };
+  
+  const dayDate = new Date(date + 'T12:00:00-05:00');
+  if (isNaN(dayDate.getTime())) return { isOpen: false, openTime: null, closeTime: null };
+  const dayOfWeek = dayDate.getDay();
+  
+  const businessHour = await prisma.businessHours.findUnique({
+    where: { restaurantId_weekday: { restaurantId, weekday: dayOfWeek } }
+  });
+  
+  // 1. Priority: BusinessHours
+  if (businessHour) {
+    if (!businessHour.isOpen) return { isOpen: false, openTime: null, closeTime: null };
+    return { isOpen: true, openTime: businessHour.openTime, closeTime: businessHour.closeTime };
+  }
+  
+  // 2. Priority: RestaurantSettings
+  if (restaurant.settings) {
+    return { isOpen: true, openTime: restaurant.settings.defaultOpenTime, closeTime: restaurant.settings.defaultCloseTime };
+  }
+  
+  // 3. Fallback
+  return { isOpen: true, openTime: DEFAULT_BUSINESS_HOURS.open, closeTime: DEFAULT_BUSINESS_HOURS.close };
+}
+
 export async function getAvailableSlots(prisma, restaurantId, date) {
   const restaurant = await prisma.restaurant.findUnique({
     where: { id: restaurantId },
@@ -55,34 +82,16 @@ export async function getAvailableSlots(prisma, restaurantId, date) {
   });
 
   if (!restaurant || !restaurant.settings) return [];
-
-  const dayDate = new Date(date + 'T12:00:00-05:00');
-  const dayOfWeek = dayDate.getDay();
-  // Ensure the date is valid
-  if (isNaN(dayDate.getTime())) {
-    console.error(`[Capacity] Invalid date format received: ${date}`);
-    return [];
-  }
-
-  const businessHour = await prisma.businessHours.findUnique({
-    where: { restaurantId_weekday: { restaurantId, weekday: dayOfWeek } },
-  });
-
-  if (!businessHour) {
-    console.warn(`[Capacity] No business hours configured for weekday ${dayOfWeek} on date ${date}. Using fallback.`);
-  }
-
-  if (businessHour && !businessHour.isOpen) {
-    console.log(`[Capacity] Date ${date} (Weekday ${dayOfWeek}) is CLOSED. Using fallback slots for request.`);
-  }
+  
+  const window = await getBusinessWindow(prisma, restaurantId, date);
+  if (!window.isOpen) return []; // Block completely if closed
 
   const { maxCapacityPerSlot } = restaurant.settings;
   const dayCapacity = await getDayCapacity(prisma, restaurantId, date);
 
-  // Generate 30-min slots between open and close
   const slots = [];
-  const openTimeStr = DEFAULT_BUSINESS_HOURS.open || (businessHour?.openTime || '18:00');
-  const closeTimeStr = DEFAULT_BUSINESS_HOURS.close || (businessHour?.closeTime || '23:59');
+  const openTimeStr = window.openTime;
+  const closeTimeStr = window.closeTime;
 
   const [openH, openM] = openTimeStr.split(':').map(Number);
   const [closeH, closeM] = closeTimeStr.split(':').map(Number);
@@ -95,14 +104,21 @@ export async function getAvailableSlots(prisma, restaurantId, date) {
     const used = dayCapacity[timeStr] || 0;
     const available = maxCapacityPerSlot - used;
 
-    slots.push({
-      time: timeStr,
-      used,
-      available,
-      maxCapacity: maxCapacityPerSlot,
-      isFull: available <= 0,
-      isFallback: !businessHour || !businessHour.isOpen
-    });
+    // Check if slot allows reservation duration
+    const slotDurationH = currentH + Math.floor((currentM + restaurant.settings.reservationDurationMinutes) / 60);
+    const slotDurationM = (currentM + restaurant.settings.reservationDurationMinutes) % 60;
+    
+    // Only add slot if it finishes before or exactly at close time
+    if (slotDurationH < closeH || (slotDurationH === closeH && slotDurationM <= closeM)) {
+      slots.push({
+        time: timeStr,
+        used,
+        available,
+        maxCapacity: maxCapacityPerSlot,
+        isFull: available <= 0,
+        isFallback: false
+      });
+    }
 
     currentM += 30;
     if (currentM >= 60) {
@@ -114,7 +130,6 @@ export async function getAvailableSlots(prisma, restaurantId, date) {
   return slots;
 }
 
-// Validate a reservation against business rules
 export async function validateReservation(prisma, restaurantId, data) {
   const errors = [];
   const restaurant = await prisma.restaurant.findUnique({
@@ -136,14 +151,30 @@ export async function validateReservation(prisma, restaurantId, data) {
     errors.push('Debe haber al menos 1 persona');
   }
 
-  // 2. Business hours check (Soft check - don't block for web requests)
-  const dayOfWeek = new Date(data.reservationDate + 'T12:00:00').getDay();
-  const businessHour = await prisma.businessHours.findUnique({
-    where: { restaurantId_weekday: { restaurantId, weekday: dayOfWeek } },
-  });
-  
-  // We don't block here anymore as per USER_REQUEST to remove impediments.
-  // The admin will review the "Pending" reservation.
+  // 2. Business hours check (Real block)
+  const window = await getBusinessWindow(prisma, restaurantId, data.reservationDate);
+  if (!window.isOpen) {
+    errors.push('El restaurante se encuentra cerrado en esta fecha.');
+  } else {
+    // Check if within bounds
+    const [openH, openM] = window.openTime.split(':').map(Number);
+    const [closeH, closeM] = window.closeTime.split(':').map(Number);
+    const [resH, resM] = data.reservationTime.split(':').map(Number);
+    
+    const endH = resH + Math.floor((resM + settings.reservationDurationMinutes) / 60);
+    const endM = (resM + settings.reservationDurationMinutes) % 60;
+
+    const resTimeVal = resH * 60 + resM;
+    const openTimeVal = openH * 60 + openM;
+    const closeTimeVal = closeH * 60 + closeM;
+    const endTimeVal = endH * 60 + endM;
+
+    if (resTimeVal < openTimeVal || resTimeVal > closeTimeVal) {
+      errors.push(`El horario de atención es de ${window.openTime} a ${window.closeTime}`);
+    } else if (endTimeVal > closeTimeVal) {
+      errors.push(`La reserva debe terminar antes o a la misma hora del cierre (${window.closeTime})`);
+    }
+  }
 
   // 3. Minimum advance hours check using America/Bogota
   const now = new Date(); // Internal UTC

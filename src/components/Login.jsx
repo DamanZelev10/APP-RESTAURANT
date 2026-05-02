@@ -14,11 +14,11 @@ export default function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    const ok = await loginAdmin(username, password);
-    if (ok) {
+    try {
+      await loginAdmin(username, password);
       navigate('/admin');
-    } else {
-      setError(t('errorLogin'));
+    } catch (err) {
+      setError(err.message || t('errorLogin'));
       setPassword('');
     }
   };

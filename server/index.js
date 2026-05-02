@@ -7,6 +7,8 @@ import dashboardRoutes from './routes/dashboard.js';
 import settingsRoutes from './routes/settings.js';
 import customerRoutes from './routes/customers.js';
 import alertRoutes from './routes/alerts.js';
+import authRoutes from './routes/auth.js';
+import { authenticateToken } from './middleware/auth.js';
 import { registerPaymentRoutes } from './routes/payments.js';
 
 const app = express();
@@ -25,11 +27,12 @@ app.use((req, res, next) => {
 });
 
 // ─── Routes ─────────────────────────────────────────────
+app.use('/api/auth', authRoutes);
 app.use('/api/reservations', reservationRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/settings', settingsRoutes);
-app.use('/api/customers', customerRoutes);
-app.use('/api/alerts', alertRoutes);
+app.use('/api/dashboard', authenticateToken, dashboardRoutes);
+app.use('/api/settings', authenticateToken, settingsRoutes);
+app.use('/api/customers', authenticateToken, customerRoutes);
+app.use('/api/alerts', authenticateToken, alertRoutes);
 app.use('/api/payments', paymentRouter);
 
 // Health check

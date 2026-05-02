@@ -25,8 +25,9 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   try {
-    const customer = await req.prisma.customer.findUnique({
-      where: { id: req.params.id },
+    const restaurant = await getDefaultRestaurant(req.prisma);
+    const customer = await req.prisma.customer.findFirst({
+      where: { id: req.params.id, restaurantId: restaurant.id },
       include: { 
         reservations: {
           orderBy: { reservationDate: 'desc' }
@@ -42,9 +43,15 @@ router.get('/:id', async (req, res) => {
 
 router.put('/:id/status', async (req, res) => {
   try {
+    const restaurant = await getDefaultRestaurant(req.prisma);
+    const existing = await req.prisma.customer.findFirst({
+      where: { id: req.params.id, restaurantId: restaurant.id }
+    });
+    if (!existing) return res.status(404).json({ error: 'Customer not found' });
+
     const { isActive } = req.body;
     const customer = await req.prisma.customer.update({
-      where: { id: req.params.id },
+      where: { id: existing.id },
       data: { isActive }
     });
     res.json(customer);
@@ -55,12 +62,18 @@ router.put('/:id/status', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
-    // Delete associated reservations first (since it's SQLite without native cascading usually enabled by default easily)
+    const restaurant = await getDefaultRestaurant(req.prisma);
+    const existing = await req.prisma.customer.findFirst({
+      where: { id: req.params.id, restaurantId: restaurant.id }
+    });
+    if (!existing) return res.status(404).json({ error: 'Customer not found' });
+
+    // Delete associated reservations first
     await req.prisma.reservation.deleteMany({
-      where: { customerId: req.params.id }
+      where: { customerId: existing.id }
     });
     const deleted = await req.prisma.customer.delete({
-      where: { id: req.params.id }
+      where: { id: existing.id }
     });
     res.json(deleted);
   } catch (err) {
